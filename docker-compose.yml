@@ -1,0 +1,51 @@
+services:
+
+  app:
+    build:
+      context: .docker/php
+    container_name: symfony-app
+    volumes:
+      - .:/srv/app
+    working_dir: /srv/app
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: 1
+    depends_on:
+      - database
+
+  ###> doctrine/doctrine-bundle ###
+  database:
+    image: mariadb:${MARIADB_VERSION:-10.11}
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-app}
+      MARIADB_USER: ${MARIADB_USER:-app}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-!ChangeMe!}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - database_data:/var/lib/mysql:rw
+      # Optional bind mount for dev
+      # - ./docker/db/data:/var/lib/mysql:rw
+  ###< doctrine/doctrine-bundle ###
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: symfony-caddy
+    ports:
+      - "8000:80"
+    volumes:
+      - ./public:/srv/app/public
+      - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  database_data:
+  caddy_data:
+  caddy_config:
