@@ -17,10 +17,12 @@ services:
   database:
     image: mariadb:${MARIADB_VERSION:-10.11}
     environment:
-      MARIADB_DATABASE: ${MARIADB_DATABASE:-app}
-      MARIADB_USER: ${MARIADB_USER:-app}
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-!ChangeMe!}
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root}
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASS:-dbrootpw}"
+      MARIADB_DATABASE: "${DB_NAME:-energyviz}"
+      MARIADB_USER: "${DB_USER:-dbuser}"
+      MARIADB_PASSWORD: "${DB_PASS:-dbpw}"
+    ports:
+      - "127.0.0.1:3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 5s
