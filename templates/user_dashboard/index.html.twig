@@ -1,0 +1,21 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    👋 Welcome, {{ user.firstName }} {{ user.lastName }}
+{% endblock %}
+
+{% block main %}
+    <div class="ea-content">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Profile Details</h5>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                    <li class="list-group-item"><strong>First Name:</strong> {{ user.firstName }}</li>
+                    <li class="list-group-item"><strong>Last Name:</strong> {{ user.lastName }}</li>
+                    <li class="list-group-item"><strong>Roles:</strong> {{ user.roles|join(', ') }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
