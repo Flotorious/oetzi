@@ -3,6 +3,7 @@
 namespace App\Controller\User;
 
 use App\Controller\Admin\UserCrudController;
+use App\Entity\Device;
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -62,6 +63,7 @@ class UserDashboardController extends AbstractDashboardController
             ->generateUrl();
 
         yield MenuItem::linkToUrl('My Profile', 'fa fa-user', $editProfileUrl);
+        yield MenuItem::linkToCrud('My Devices', 'fas fa-microchip', Device::class);
         yield MenuItem::linkToLogout('Logout', 'fa fa-sign-out');
     }
 }
