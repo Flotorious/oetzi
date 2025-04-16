@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: DeviceRepository::class)]
 class Device
 {
@@ -21,7 +22,10 @@ class Device
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $isActive = false;
+
+    #[ORM\Column(type: 'boolean')]
     private ?bool $isTemplate = false;
 
     #[ORM\ManyToOne(inversedBy: 'devices')]
@@ -68,6 +72,27 @@ class Device
         $this->description = $description;
 
         return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
+    public function getLastOpenUsageLog(): ?DeviceUsageLog
+    {
+        foreach ($this->deviceUsageLogs as $log) {
+            if ($log->getEndedAt() === null) {
+                return $log;
+            }
+        }
+        return null;
     }
 
     public function isTemplate(): ?bool
@@ -144,17 +169,6 @@ class Device
         }
 
         return $this;
-    }
-
-    public function isRunning(): bool
-    {
-        foreach ($this->getDeviceUsageLogs() as $log) {
-            if ($log->getEndedAt() === null) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public function __toString(): string

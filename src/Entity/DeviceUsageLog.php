@@ -117,7 +117,7 @@ class DeviceUsageLog
         if ($this->getDevice() && $this->startedAt && $this->endedAt) {
             $seconds = $this->endedAt->getTimestamp() - $this->startedAt->getTimestamp();
 
-            $minutes = round(($this->endedAt->getTimestamp() - $this->startedAt->getTimestamp()) / 60);
+            $minutes = ($this->endedAt->getTimestamp() - $this->startedAt->getTimestamp()) / 60;
             $remainingSeconds = $seconds % 60;
 
             $this->title = sprintf(
@@ -138,6 +138,11 @@ class DeviceUsageLog
 
     public function __toString(): string
     {
-        return $this->getTitle();
+        if ($this->title) {
+            return $this->title;
+        }
+
+        return sprintf('Usage on %s', $this->startedAt?->format('Y-m-d H:i') ?? 'unknown time');
     }
+
 }

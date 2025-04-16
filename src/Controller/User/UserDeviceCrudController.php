@@ -66,6 +66,7 @@ class UserDeviceCrudController extends AbstractCrudController
             TextField::new('name'),
             TextField::new('description'),
             NumberField::new('powerWatt'),
+            BooleanField::new('isActive', 'Active'),
             BooleanField::new('isTemplate'),
             CollectionField::new('deviceUsageLogs')
                 ->useEntryCrudForm(DeviceUsageLogCrudController::class)
@@ -74,69 +75,31 @@ class UserDeviceCrudController extends AbstractCrudController
         ];
     }
 
-    public function configureActions(Actions $actions): Actions
+    public function updateEntity(EntityManagerInterface $em, $entityInstance): void
     {
-        $start = Action::new('startUsage', 'Start Usage', 'fa fa-play')
-            ->linkToRoute('device_start_usage', fn(Device $device) => ['id' => $device->getId()]);
-        $stop = Action::new('stopUsage', 'Stop Usage', 'fa fa-stop')
-            ->linkToRoute('device_stop_usage', fn(Device $device) => ['id' => $device->getId()]);
-
-        return $actions
-            ->add(Crud::PAGE_INDEX, $start)
-            ->add(Crud::PAGE_INDEX, $stop);
-    }
-
-    #[Route('/profile/user-device/start-usage/{id}', name: 'device_start_usage')]
-    public function startUsage(int $id, DeviceRepository $deviceRepository, EntityManagerInterface $em): RedirectResponse
-    {
-        $device = $deviceRepository->find($id);
-
-        if (!$device) {
-            throw $this->createNotFoundException();
-        }
-        $log = new DeviceUsageLog();
-        $log->setDevice($device);
-        $log->setStartedAt(new \DateTimeImmutable());
-
-        $em->persist($log);
-        $em->flush();
-
-        $this->addFlash('success', 'Usage started.');
-
-        return $this->redirectToRoute('app_user_dashboard_user_device_index');
-    }
-
-    #[Route('/profile/user-device/stop-usage/{id}', name: 'device_stop_usage')]
-    public function stopUsage(int $id, DeviceRepository $deviceRepository, EntityManagerInterface $em): RedirectResponse
-    {
-        $device = $deviceRepository->find($id);
-
-        if (!$device) {
-            throw $this->createNotFoundException();
+        if (!$entityInstance instanceof Device) {
+            return;
         }
 
-        $repo = $em->getRepository(DeviceUsageLog::class);
+        $logRepo = $em->getRepository(DeviceUsageLog::class);
+        $isActiveNow = $entityInstance->isActive();
+        $hasOpenLog = $entityInstance->getLastOpenUsageLog() !== null;
 
-        // Get last open session
-        $log = $repo->findOneBy([
-            'device' => $device,
-            'endedAt' => null,
-        ], ['startedAt' => 'DESC']);
-
-        if (!$log) {
-            $this->addFlash('warning', 'No active usage to stop.');
-            return $this->redirectToRoute('app_user_dashboard_user_device_index');
+        if ($isActiveNow && !$hasOpenLog) {
+            $log = new DeviceUsageLog();
+            $log->setDevice($entityInstance);
+            $log->setStartedAt(new \DateTimeImmutable());
+            $entityInstance->addDeviceUsageLog($log);
+            $em->persist($log);
         }
 
-        $log->setEndedAt(new \DateTimeImmutable());
-        $log->calculateEnergyUsage(); // if not handled via lifecycle
-        $log->setTitleFromData();
+        if (!$isActiveNow && $hasOpenLog) {
+            $log = $entityInstance->getLastOpenUsageLog();
+            $log->setEndedAt(new \DateTimeImmutable());
+            $log->calculateEnergyUsage();
+            $log->setTitleFromData();
+        }
 
         $em->flush();
-
-        $this->addFlash('success', 'Usage stopped.');
-
-        return $this->redirectToRoute('app_user_dashboard_user_device_index');
-
     }
 }
