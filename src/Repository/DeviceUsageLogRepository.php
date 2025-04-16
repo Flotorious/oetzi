@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\DeviceUsageLog;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,6 +16,26 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, DeviceUsageLog::class);
     }
+
+    public function getDailyEnergySummary(User $user): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+            $sql = "
+            SELECT DATE(l.started_at) AS date, SUM(l.energy_used_kwh) AS total_energy
+            FROM device_usage_log l
+            INNER JOIN device d ON l.device_id = d.id
+            WHERE d.user_id = :userId
+            GROUP BY DATE(l.started_at)
+            ORDER BY DATE(l.started_at)
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery(['userId' => $user->getId()]);
+
+        return $result->fetchAllAssociative();
+    }
+
 
     //    /**
     //     * @return DeviceUsageLog[] Returns an array of DeviceUsageLog objects
