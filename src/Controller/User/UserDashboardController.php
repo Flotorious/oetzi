@@ -2,24 +2,40 @@
 
 namespace App\Controller\User;
 
+use AllowDynamicProperties;
 use App\Controller\Admin\UserCrudController;
 use App\Entity\Device;
 use App\Entity\DeviceUsageLog;
 use App\Entity\User;
+use App\Repository\DeviceRepository;
+use App\Repository\DeviceUsageLogRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
+#[AllowDynamicProperties]
 #[AdminDashboard(routePath: '/profile', routeName: 'app_user_dashboard')]
 class UserDashboardController extends AbstractDashboardController
 {
-    public function __construct(private AdminUrlGenerator $adminUrlGenerator)
-    {
-    }
 
+    private ChartBuilderInterface $chartBuilder;
+
+    public function __construct(
+        private AdminUrlGenerator $adminUrlGenerator,
+        DeviceRepository $deviceRepository,
+        DeviceUsageLogRepository $deviceUsageLogRepository,
+        ChartBuilderInterface $chartBuilder,
+    )
+    {
+        $this->deviceRepository = $deviceRepository;
+        $this->deviceUsageLogRepository = $deviceUsageLogRepository;
+        $this->chartBuilder = $chartBuilder;
+    }
 
     #[Route('/dashboard', name: 'user_dashboard_index')]
     public function index(): Response
@@ -42,8 +58,21 @@ class UserDashboardController extends AbstractDashboardController
         // Option 3. You can render some custom template to display a proper dashboard with widgets, etc.
         // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
         //
+
+        $qb = $this->deviceRepository->createQueryBuilder('d')
+            ->select('COUNT(d.id)')
+            ->where('d.user = :user')
+            ->setParameter('user', $this->getUser());
+
+        $numberDevices = (int) $qb->getQuery()->getSingleScalarResult();
+
+        $data = $this->deviceUsageLogRepository->getDailyEnergySummary($this->getUser());
+
         return $this->render('user_dashboard/index.html.twig', [
             'user' => $this->getUser(),
+            'numberDevices' => $numberDevices,
+            'dailyEnergySummary' => $data,
+            'chart' => $this->createChart()
         ]);
     }
 
@@ -67,5 +96,37 @@ class UserDashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('My Devices', 'fas fa-microchip', Device::class);
         yield MenuItem::linkToLogout('Logout', 'fa fa-sign-out');
         yield MenuItem::linkToCrud('Usage Logs', 'fa fa-clock', DeviceUsageLog::class);
+    }
+
+    private function createChart(): Chart
+    {
+        $data = $this->deviceUsageLogRepository->getDailyEnergySummary($this->getUser());
+
+        $labels = array_column($data, 'date'); // X-axis: ['2025-04-08', ...]
+        $values = array_map(fn($d) => round($d['total_energy'], 2), $data); // Y-axis: [3.4, 4.1, ...]
+
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_LINE);
+
+        $chart->setData([
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => 'Energy Usage (kWh)',
+                    'backgroundColor' => 'rgb(54, 162, 235)',
+                    'borderColor' => 'rgb(54, 162, 235)',
+                    'data' => $values,
+                ],
+            ],
+        ]);
+
+        $chart->setOptions([
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                ],
+            ],
+        ]);
+
+        return $chart;
     }
 }

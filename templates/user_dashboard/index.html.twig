@@ -6,7 +6,7 @@
 
 {% block main %}
     <div class="ea-content">
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title">Profile Details</h5>
                 <ul class="list-group">
@@ -17,5 +17,16 @@
                 </ul>
             </div>
         </div>
+        <div class="col-12">
+            <h5 class="card-title">Energy Usage (Last 7 Days)</h5>
+            {{ render_chart(chart) }}
+        </div>
     </div>
 {% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}
+
+
