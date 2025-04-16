@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DeviceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DeviceRepository::class)]
@@ -20,13 +22,24 @@ class Device
     private ?string $description = null;
 
     #[ORM\Column]
-    private ?bool $isTemplate = null;
+    private ?bool $isTemplate = false;
 
     #[ORM\ManyToOne(inversedBy: 'devices')]
     private ?User $user = null;
 
     #[ORM\Column(nullable: true)]
     private ?float $powerWatt = null;
+
+    /**
+     * @var Collection<int, DeviceUsageLog>
+     */
+    #[ORM\OneToMany(targetEntity: DeviceUsageLog::class, mappedBy: 'device', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $deviceUsageLogs;
+
+    public function __construct()
+    {
+        $this->deviceUsageLogs = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -91,5 +104,61 @@ class Device
         $this->powerWatt = $powerWatt;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, DeviceUsageLog>
+     */
+    public function getDeviceUsageLogs(): Collection
+    {
+        return $this->deviceUsageLogs;
+    }
+
+    public function addDeviceUsageLog(DeviceUsageLog $deviceUsageLog): static
+    {
+        if (!$this->deviceUsageLogs->contains($deviceUsageLog)) {
+            $this->deviceUsageLogs->add($deviceUsageLog);
+            $deviceUsageLog->setDevice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDeviceUsageLog(DeviceUsageLog $deviceUsageLog): static
+    {
+        if ($this->deviceUsageLogs->removeElement($deviceUsageLog)) {
+            // set the owning side to null (unless already changed)
+            if ($deviceUsageLog->getDevice() === $this) {
+                $deviceUsageLog->setDevice(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function addUsageLog(DeviceUsageLog $log): self
+    {
+        if (!$this->deviceUsageLogs->contains($log)) {
+            $this->deviceUsageLogs[] = $log;
+            $log->setDevice($this);
+        }
+
+        return $this;
+    }
+
+    public function isRunning(): bool
+    {
+        foreach ($this->getDeviceUsageLogs() as $log) {
+            if ($log->getEndedAt() === null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function __toString(): string
+    {
+        return sprintf('%s (%dW)', $this->name, $this->powerWatt);
     }
 }

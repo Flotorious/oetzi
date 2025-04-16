@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Device;
+use App\Entity\DeviceUsageLog;
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -49,5 +50,6 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::linkToCrud('Users', 'fas fa-list', User::class);
         yield MenuItem::linkToCrud('Devices', 'fas fa-microchip', Device::class);
+        yield MenuItem::linkToCrud('Usage Logs', 'fa fa-clock', DeviceUsageLog::class);
     }
 }
