@@ -7,8 +7,10 @@ use App\Controller\Admin\UserCrudController;
 use App\Entity\Device;
 use App\Entity\DeviceUsageLog;
 use App\Entity\User;
+use App\Entity\UserEnergySnapshot;
 use App\Repository\DeviceRepository;
 use App\Repository\DeviceUsageLogRepository;
+use App\Repository\UserEnergySnapshotRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -29,11 +31,13 @@ class UserDashboardController extends AbstractDashboardController
         private AdminUrlGenerator $adminUrlGenerator,
         DeviceRepository $deviceRepository,
         DeviceUsageLogRepository $deviceUsageLogRepository,
+        UserEnergySnapshotRepository $userEnergySnapshotRepository,
         ChartBuilderInterface $chartBuilder,
     )
     {
         $this->deviceRepository = $deviceRepository;
         $this->deviceUsageLogRepository = $deviceUsageLogRepository;
+        $this->userEnergySnapshotRepository = $userEnergySnapshotRepository;
         $this->chartBuilder = $chartBuilder;
     }
 
@@ -64,6 +68,13 @@ class UserDashboardController extends AbstractDashboardController
             ->where('d.user = :user')
             ->setParameter('user', $this->getUser());
 
+        $lastSnapshot = $this->userEnergySnapshotRepository->findOneBy(
+            ['user' => $this->getUser()],
+            ['timestamp' => 'DESC']
+        );
+
+        $lastKwh = $lastSnapshot ? $lastSnapshot->getConsumptionKwh() : null;
+
         $numberDevices = (int) $qb->getQuery()->getSingleScalarResult();
 
         $data = $this->deviceUsageLogRepository->getDailyEnergySummary($this->getUser());
@@ -71,6 +82,7 @@ class UserDashboardController extends AbstractDashboardController
         return $this->render('user_dashboard/index.html.twig', [
             'user' => $this->getUser(),
             'numberDevices' => $numberDevices,
+            'consumptionKwh' => $lastKwh,
             'dailyEnergySummary' => $data,
             'chart' => $this->createChart()
         ]);
@@ -96,6 +108,7 @@ class UserDashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('My Devices', 'fas fa-microchip', Device::class);
         yield MenuItem::linkToLogout('Logout', 'fa fa-sign-out');
         yield MenuItem::linkToCrud('Usage Logs', 'fa fa-clock', DeviceUsageLog::class);
+        yield MenuItem::linkToCrud('Energy Logs', 'fa fa-clock', UserEnergySnapshot::class);
     }
 
     private function createChart(): Chart
