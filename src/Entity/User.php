@@ -48,9 +48,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Device::class, mappedBy: 'user')]
     private Collection $devices;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $feedUrl = null;
+
+    /**
+     * @var Collection<int, UserEnergySnapshot>
+     */
+    #[ORM\OneToMany(targetEntity: UserEnergySnapshot::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $userEnergySnapshots;
+
     public function __construct()
     {
         $this->devices = new ArrayCollection();
+        $this->userEnergySnapshots = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -188,6 +198,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($device->getUser() === $this) {
                 $device->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getFeedUrl(): ?string
+    {
+        return $this->feedUrl;
+    }
+
+    public function setFeedUrl(?string $feedUrl): static
+    {
+        $this->feedUrl = $feedUrl;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserEnergySnapshot>
+     */
+    public function getUserEnergySnapshots(): Collection
+    {
+        return $this->userEnergySnapshots;
+    }
+
+    public function addUserEnergySnapshot(UserEnergySnapshot $userEnergySnapshot): static
+    {
+        if (!$this->userEnergySnapshots->contains($userEnergySnapshot)) {
+            $this->userEnergySnapshots->add($userEnergySnapshot);
+            $userEnergySnapshot->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserEnergySnapshot(UserEnergySnapshot $userEnergySnapshot): static
+    {
+        if ($this->userEnergySnapshots->removeElement($userEnergySnapshot)) {
+            // set the owning side to null (unless already changed)
+            if ($userEnergySnapshot->getUser() === $this) {
+                $userEnergySnapshot->setUser(null);
             }
         }
 

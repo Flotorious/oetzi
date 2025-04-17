@@ -105,7 +105,7 @@ class UserDashboardController extends AbstractDashboardController
         $labels = array_column($data, 'date'); // X-axis: ['2025-04-08', ...]
         $values = array_map(fn($d) => round($d['total_energy'], 2), $data); // Y-axis: [3.4, 4.1, ...]
 
-        $chart = $this->chartBuilder->createChart(Chart::TYPE_LINE);
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
 
         $chart->setData([
             'labels' => $labels,
