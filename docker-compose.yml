@@ -22,7 +22,7 @@ services:
       MARIADB_USER: "${DB_USER:-dbuser}"
       MARIADB_PASSWORD: "${DB_PASS:-dbpw}"
     ports:
-      - "127.0.0.1:3306:3306"
+      - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 5s
@@ -46,6 +46,15 @@ services:
       - caddy_config:/config
     depends_on:
       - app
+
+  messenger-consumer:
+    build:
+      context: .docker/php
+    container_name: consumer-app
+    depends_on:
+      - app
+    command: php bin/console messenger:consume async scheduler_FetchEnergyFeedScheduler --no-interaction
+    restart: unless-stopped
 
 volumes:
   database_data:
