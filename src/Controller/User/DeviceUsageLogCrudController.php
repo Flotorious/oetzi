@@ -22,6 +22,7 @@ class DeviceUsageLogCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
+            TextField::new('title'),
             DateTimeField::new('startedAt'),
             DateTimeField::new('endedAt'),
             IntegerField::new('duration'),
