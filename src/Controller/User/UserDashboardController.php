@@ -84,7 +84,7 @@ class UserDashboardController extends AbstractDashboardController
             'numberDevices' => $numberDevices,
             'consumptionKwh' => $lastKwh,
             'dailyEnergySummary' => $data,
-            'chart' => $this->createChart()
+            'chart' => $this->createChartWithDevice()
         ]);
     }
 
@@ -104,12 +104,14 @@ class UserDashboardController extends AbstractDashboardController
             ->setEntityId($userId)
             ->generateUrl();
 
-        yield MenuItem::linkToUrl('My Profile', 'fa fa-user', $editProfileUrl);
+        yield MenuItem::linkToDashboard('My Dashboard', 'fas fa-chart-line');
+        yield MenuItem::linkToUrl('Edit Profile', 'fa fa-user', $editProfileUrl);
         yield MenuItem::linkToCrud('My Devices', 'fas fa-microchip', Device::class);
-        yield MenuItem::linkToLogout('Logout', 'fa fa-sign-out');
         yield MenuItem::linkToCrud('Usage Logs', 'fa fa-clock', DeviceUsageLog::class);
         yield MenuItem::linkToCrud('Energy Logs', 'fa fa-clock', UserEnergySnapshot::class);
     }
+
+
 
     private function createChart(): Chart
     {
@@ -142,4 +144,68 @@ class UserDashboardController extends AbstractDashboardController
 
         return $chart;
     }
+
+    private function createChartWithDevice(): Chart
+    {
+        $data = $this->deviceUsageLogRepository->getDailyDeviceEnergySummary($this->getUser());
+
+        $byDateDevice = [];
+        $devices = [];
+
+        foreach ($data as $row) {
+            $date = $row['date'];
+            $device = $row['device'];
+            $energy = round($row['energy'], 2);
+
+            $byDateDevice[$device][$date] = $energy;
+            $devices[$device] = true;
+        }
+
+        $labels = array_unique(array_column($data, 'date'));
+        sort($labels); // sort by date
+
+        $datasets = [];
+        foreach (array_keys($devices) as $device) {
+            $values = [];
+
+            foreach ($labels as $label) {
+                $values[] = $byDateDevice[$device][$label] ?? 0;
+            }
+
+            $datasets[] = [
+                'label' => $device,
+                'data' => $values,
+                'stack' => 'energy', // Key to enable stacking
+            ];
+        }
+
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
+
+        $chart->setData([
+            'labels' => $labels,
+            'datasets' => $datasets,
+        ]);
+
+        $chart->setOptions([
+            'responsive' => true,
+            'plugins' => [
+                'title' => [
+                    'display' => true,
+                    'text' => 'Daily Energy Usage by Device',
+                ],
+            ],
+            'scales' => [
+                'x' => [
+                    'stacked' => true,
+                ],
+                'y' => [
+                    'stacked' => true,
+                    'beginAtZero' => true,
+                ],
+            ],
+        ]);
+
+        return $chart;
+    }
+
 }

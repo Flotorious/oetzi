@@ -21,7 +21,7 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
     {
         $conn = $this->getEntityManager()->getConnection();
 
-            $sql = "
+        $sql = "
             SELECT DATE(l.started_at) AS date, SUM(l.energy_used_kwh) AS total_energy
             FROM device_usage_log l
             INNER JOIN device d ON l.device_id = d.id
@@ -32,6 +32,28 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
 
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery(['userId' => $user->getId()]);
+
+        return $result->fetchAllAssociative();
+    }
+
+    public function getDailyDeviceEnergySummary(User $user): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "
+            SELECT
+              DATE(dul.started_at) AS date,
+              d.name AS device,
+              SUM(dul.energy_used_kwh) AS energy
+            FROM device_usage_log dul
+            JOIN device d ON d.id = dul.device_id
+            WHERE d.user_id = :user
+            GROUP BY DATE(dul.started_at), device
+            ORDER BY date ASC
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery(['user' => $user->getId()]);
 
         return $result->fetchAllAssociative();
     }
