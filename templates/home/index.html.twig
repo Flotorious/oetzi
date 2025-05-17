@@ -3,14 +3,291 @@
 {% block title %}Hello HomeController!{% endblock %}
 
 {% block body %}
+    <!-- Start Header/Navigation -->
+    <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
+        <div class="container">
+            <a class="navbar-brand" href="{{ path('app_home') }}">
+                <img src="{{ asset('img/logo-white.png') }}" />
+            </a>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni"
+                    aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/srv/app/src/Controller/HomeController.php</code></li>
-        <li>Your template at <code>/srv/app/templates/home/index.html.twig</code></li>
-    </ul>
-</div>
+            <div class="collapse navbar-collapse" id="navbarsFurni">
+                <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
+                    </li>
+                    <li><a class="nav-link" href="#">About us</a></li>
+                    <li><a class="nav-link" href="#">Documentation</a></li>
+                </ul>
+
+                <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+                    <li><a class="nav-link" href="{{ path('app_login') }}"><img src="{{ asset('img/user.svg') }}"></a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- End Header/Navigation -->
+
+    <!-- Start Hero Section -->
+    <div class="hero">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-lg-5">
+                    <div class="intro-excerpt">
+                        <h1>Know your consumption</h1>
+                        <p class="mb-4">
+                            Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
+                            vulputate velit imperdiet dolor tempor tristique.
+                        </p>
+                        <p>
+                            <a href="#" class="btn btn-white-outline">Explore</a>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="hero-img-wrap">
+                        <img src="{{ asset('img/hero-home.png') }}" class="img-fluid rounded">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Hero Section -->
+
+    <!-- Start Why Choose Us Section -->
+    <div class="why-choose-section">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-lg-6">
+                    <h2 class="section-title">Why Choose Us</h2>
+                    <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit
+                        imperdiet dolor tempor tristique.</p>
+
+                    <div class="row my-5">
+                        <div class="col-6 col-md-6">
+                            <div class="feature">
+                                <div class="icon">
+                                    <img src="{{ asset('img/truck.svg') }}" alt="Image" class="imf-fluid">
+                                </div>
+                                <h3>Fast &amp; Free Shipping</h3>
+                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
+                                    vulputate.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-6">
+                            <div class="feature">
+                                <div class="icon">
+                                    <img src="{{ asset('img/bag.svg') }}" alt="Image" class="imf-fluid">
+                                </div>
+                                <h3>Easy to Shop</h3>
+                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
+                                    vulputate.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-6">
+                            <div class="feature">
+                                <div class="icon">
+                                    <img src="{{ asset('img/support.svg') }}" alt="Image" class="imf-fluid">
+                                </div>
+                                <h3>24/7 Support</h3>
+                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
+                                    vulputate.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-6">
+                            <div class="feature">
+                                <div class="icon">
+                                    <img src="{{ asset('img/return.svg') }}" alt="Image" class="imf-fluid">
+                                </div>
+                                <h3>Hassle Free Returns</h3>
+                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
+                                    vulputate.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="img-wrap">
+                        <img src="https://images.unsplash.com/photo-1579226905180-636b76d96082?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                             alt="Image" class="img-fluid"
+                            >
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- End Why Choose Us Section -->
+
+    <!-- Start We Help Section -->
+    <div class="we-help-section">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-lg-7 mb-lg-0">
+                    <div class="imgs-grid">
+                        <div class="grid grid-1"><img src="https://images.unsplash.com/photo-1556155092-8707de31f9c4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Untree.co"></div>
+                        <div class="grid grid-2"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Untree.co"></div>
+                        <div class="grid grid-3"><img src="https://images.unsplash.com/photo-1613442368781-2e54fee2a055?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE3OHx8fGVufDB8fHx8fA%3D%3D" alt="Untree.co"></div>
+                    </div>
+                </div>
+                <div class="col-lg-5 ps-lg-5">
+                    <h2 class="section-title mb-4">We Help You Make Modern Interior Design</h2>
+                    <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada.
+                        Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque
+                        habitant morbi tristique senectus et netus et malesuada</p>
+
+                    <ul class="list-unstyled custom-list my-4">
+                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
+                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
+                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
+                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
+                    </ul>
+                    <p><a herf="#" class="btn">Explore</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End We Help Section -->
+
+    <!-- Start Testimonial Slider -->
+    <div class="testimonial-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-7 mx-auto text-center">
+                    <h2 class="section-title">Testimonials</h2>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-12">
+                    <div class="testimonial-slider-wrap text-center">
+                        <div class="testimonial-slider">
+                            <div class="item">
+                                <div class="row justify-content-center">
+                                    <div class="col-lg-8 mx-auto">
+
+                                        <div class="testimonial-block text-center">
+                                            <blockquote class="mb-5">
+                                                <p>&ldquo;Donec facilisis quam ut purus rutrum lobortis. Donec vitae
+                                                    odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
+                                                    vulputate velit imperdiet dolor tempor tristique. Pellentesque
+                                                    habitant morbi tristique senectus et netus et malesuada fames ac
+                                                    turpis egestas. Integer convallis volutpat dui quis scelerisque.&rdquo;</p>
+                                            </blockquote>
+
+                                            <div class="author-info">
+                                                <div class="author-pic">
+                                                    <img src="{{ asset('img/person-1.png') }}" alt="Maria Jones"
+                                                         class="img-fluid">
+                                                </div>
+                                                <h3 class="font-weight-bold">Maria Jones</h3>
+                                                <span class="position d-block mb-3">CEO, Co-Founder, XYZ Inc.</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Testimonial Slider -->
+
+    <!-- Start Footer Section -->
+    <footer class="footer-section">
+        <div class="container relative">
+
+            <div class="sofa-img">
+                <img src="{{ asset('img/hero-home.png') }}" alt="Image" class="rounded img-fluid">
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="subscription-form">
+                        <h3 class="d-flex align-items-center"><span class="me-1"><img
+                                    src="{{ asset('img/envelope-outline.svg') }}" alt="Image"
+                                    class="img-fluid"></span><span>Subscribe to Newsletter</span></h3>
+
+                        <form action="#" class="row g-3">
+                            <div class="col-auto">
+                                <input type="text" class="form-control" placeholder="Enter your name">
+                            </div>
+                            <div class="col-auto">
+                                <input type="email" class="form-control" placeholder="Enter your email">
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-primary">
+                                    <span class="fa fa-paper-plane"></span>
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-5 mb-3">
+                <div class="col-lg-4">
+                    <div class="footer-logo-wrap">
+                        <a href="#" class="footer-logo">
+                            <img src="{{ asset('img/logo.png') }}">
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 align-content-end">
+                    <ul class="list-unstyled custom-social">
+                        <li><a href="#"><span class="fa fa-brands fa-facebook-f"></span></a></li>
+                        <li><a href="#"><span class="fa fa-brands fa-twitter"></span></a></li>
+                        <li><a href="#"><span class="fa fa-brands fa-instagram"></span></a></li>
+                        <li><a href="#"><span class="fa fa-brands fa-linkedin"></span></a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-4 align-content-end align-items-end text-lg-end">
+                    <ul class="list-unstyled d-inline-flex ms-auto g-1">
+                        <li class="me-4"><a href="{{ path('app_home') }}">Home</a></li>
+                        <li class="me-4"><a href="#">About us</a></li>
+                        <li class="me-4"><a href="#">Documentation</a></li>
+                        <li><a href="{{ path('app_login') }}">Log In</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="border-top copyright">
+                <div class="row pt-4">
+                    <div class="col-lg-6">
+                        <p class="mb-2 text-center text-lg-start">Copyright &copy;<script>document.write(new Date().getFullYear());</script>
+                            . All Rights Reserved. &mdash; Designed with love by <a
+                                href="https://untree.co">Untree.co</a> Distributed By <a hreff="https://themewagon.com">ThemeWagon</a>
+                            <!-- License information: https://untree.co/license/ -->
+                        </p>
+                    </div>
+
+                    <div class="col-lg-6 text-center text-lg-end">
+                        <ul class="list-unstyled d-inline-flex ms-auto">
+                            <li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </footer>
+    <!-- End Footer Section -->
 {% endblock %}

@@ -24,6 +24,7 @@
         "@symfony/ux-chartjs": "^2.24.0",
         "@symfony/ux-turbo": "^2.24.0",
         "bootstrap": "^5.3.6",
-        "chart.js": "^4.4.9"
+        "chart.js": "^4.4.9",
+        "tiny-slider": "^2.9.4"
     }
 }
