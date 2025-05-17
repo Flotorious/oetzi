@@ -44,11 +44,12 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
             SELECT
               DATE(dul.started_at) AS date,
               d.name AS device,
+              d.id AS deviceId,
               SUM(dul.energy_used_kwh) AS energy
             FROM device_usage_log dul
             JOIN device d ON d.id = dul.device_id
             WHERE d.user_id = :user
-            GROUP BY DATE(dul.started_at), device
+            GROUP BY DATE(dul.started_at), d.id, d.name
             ORDER BY date ASC
         ";
 
