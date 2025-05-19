@@ -20,12 +20,28 @@
                     <li class="nav-item active">
                         <a class="nav-link" href="{{ path('app_home') }}">Home</a>
                     </li>
-                    <li><a class="nav-link" href="#">About us</a></li>
-                    <li><a class="nav-link" href="#">Documentation</a></li>
+                    <li>
+                        <a class="nav-link" href="#">About us</a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="#">Documentation</a>
+                    </li>
                 </ul>
 
                 <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
-                    <li><a class="nav-link" href="{{ path('app_login') }}"><img src="{{ asset('img/user.svg') }}"></a></li>
+                    {% if is_granted('ROLE_USER') %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_user_dashboard') }}">
+                                <img src="{{ asset('img/user.svg') }}" alt="Profile">
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_login') }}">
+                               LogIn
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

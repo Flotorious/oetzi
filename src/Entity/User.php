@@ -21,15 +21,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
 
@@ -42,18 +36,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $phone = null;
 
-    /**
-     * @var Collection<int, Device>
-     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $street = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $postalCode = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $country = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $meterIdentifier = null;
+
     #[ORM\OneToMany(targetEntity: Device::class, mappedBy: 'user')]
     private Collection $devices;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $feedUrl = null;
 
-    /**
-     * @var Collection<int, UserEnergySnapshot>
-     */
     #[ORM\OneToMany(targetEntity: UserEnergySnapshot::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $userEnergySnapshots;
 
@@ -76,47 +79,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     *
-     * @return list<string>
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -125,17 +108,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        // Clear temporary sensitive data
     }
 
     public function getFirstName(): ?string
@@ -146,7 +124,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstName(?string $firstName): static
     {
         $this->firstName = $firstName;
-
         return $this;
     }
 
@@ -158,7 +135,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
-
         return $this;
     }
 
@@ -170,7 +146,61 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+        return $this;
+    }
 
+    public function getStreet(): ?string
+    {
+        return $this->street;
+    }
+
+    public function setStreet(?string $street): static
+    {
+        $this->street = $street;
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = $city;
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $country;
+        return $this;
+    }
+
+    public function getMeterIdentifier(): ?string
+    {
+        return $this->meterIdentifier;
+    }
+
+    public function setMeterIdentifier(?string $meterIdentifier): static
+    {
+        $this->meterIdentifier = $meterIdentifier;
         return $this;
     }
 
@@ -188,19 +218,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->devices->add($device);
             $device->setUser($this);
         }
-
         return $this;
     }
 
     public function removeDevice(Device $device): static
     {
         if ($this->devices->removeElement($device)) {
-            // set the owning side to null (unless already changed)
             if ($device->getUser() === $this) {
                 $device->setUser(null);
             }
         }
-
         return $this;
     }
 
@@ -212,7 +239,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFeedUrl(?string $feedUrl): static
     {
         $this->feedUrl = $feedUrl;
-
         return $this;
     }
 
@@ -230,19 +256,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->userEnergySnapshots->add($userEnergySnapshot);
             $userEnergySnapshot->setUser($this);
         }
-
         return $this;
     }
 
     public function removeUserEnergySnapshot(UserEnergySnapshot $userEnergySnapshot): static
     {
         if ($this->userEnergySnapshots->removeElement($userEnergySnapshot)) {
-            // set the owning side to null (unless already changed)
             if ($userEnergySnapshot->getUser() === $this) {
                 $userEnergySnapshot->setUser(null);
             }
         }
-
         return $this;
     }
 }
