@@ -19,19 +19,16 @@ class Device
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(type: 'boolean')]
     private ?bool $isActive = false;
 
-    #[ORM\Column(type: 'boolean')]
-    private ?bool $isTemplate = false;
-
     #[ORM\ManyToOne(inversedBy: 'devices')]
     private ?User $user = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(nullable: false)]
     private ?float $powerWatt = null;
 
     /**
@@ -93,18 +90,6 @@ class Device
             }
         }
         return null;
-    }
-
-    public function isTemplate(): ?bool
-    {
-        return $this->isTemplate;
-    }
-
-    public function setIsTemplate(bool $isTemplate): static
-    {
-        $this->isTemplate = $isTemplate;
-
-        return $this;
     }
 
     public function getUser(): ?User

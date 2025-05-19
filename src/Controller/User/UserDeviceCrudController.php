@@ -10,7 +10,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -19,7 +18,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\DeviceUsageLog;
@@ -49,6 +50,53 @@ class UserDeviceCrudController extends AbstractCrudController
             ->setParameter('user', $this->getUser());
     }
 
+    #[Route('/profile/device-create-defaults', name: 'user_device_create_defaults')]
+    public function createDefaultDevices(EntityManagerInterface $em): RedirectResponse
+    {
+        $user = $this->getUser();
+
+        if ($user->getDevices()->count() > 0) {
+            $this->addFlash('warning', 'You already have devices.');
+
+            return $this->redirect($this->adminUrlGenerator
+                ->setDashboard(UserDashboardController::class)
+                ->setController(self::class)
+                ->setAction(Crud::PAGE_INDEX)
+                ->generateUrl());
+        }
+
+        $defaults = [
+            ['name' => 'Fridge', 'power' => 150],
+            ['name' => 'TV', 'power' => 100],
+            ['name' => 'Washing Machine', 'power' => 500],
+            ['name' => 'Laptop', 'power' => 65],
+            ['name' => 'Microwave', 'power' => 1200],
+            ['name' => 'Oven', 'power' => 2000],
+            ['name' => 'Air Conditioner', 'power' => 1500],
+            ['name' => 'Heater', 'power' => 1000],
+            ['name' => 'Vacuum Cleaner', 'power' => 800],
+            ['name' => 'Water Boiler', 'power' => 1800],
+        ];
+
+        foreach ($defaults as $item) {
+            $device = new Device();
+            $device->setUser($user);
+            $device->setName($item['name']);
+            $device->setPowerWatt($item['power']);
+            $device->setIsActive(false);
+            $em->persist($device);
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', 'Default devices created!');
+        return $this->redirect($this->adminUrlGenerator
+            ->setDashboard(UserDashboardController::class)
+            ->setController(self::class)
+            ->setAction(Crud::PAGE_INDEX)
+            ->generateUrl());
+    }
+
     public function findOneEntity($entityId)
     {
         $device = parent::findOneEntity($entityId);
@@ -60,6 +108,16 @@ class UserDeviceCrudController extends AbstractCrudController
         return $device;
     }
 
+    public function configureActions(Actions $actions): Actions
+    {
+        $createDefaults = Action::new('createDefaultDevices', 'Create Default Devices')
+            ->linkToRoute('user_device_create_defaults')
+            ->createAsGlobalAction();
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, $createDefaults);
+    }
+
     public function configureFields(string $pageName): iterable
     {
         return [
@@ -67,7 +125,6 @@ class UserDeviceCrudController extends AbstractCrudController
             TextField::new('description'),
             NumberField::new('powerWatt'),
             BooleanField::new('isActive', 'Active'),
-            BooleanField::new('isTemplate'),
             CollectionField::new('deviceUsageLogs')
                 ->useEntryCrudForm(DeviceUsageLogCrudController::class)
                 ->setFormTypeOptions(['by_reference' => false])
@@ -75,6 +132,11 @@ class UserDeviceCrudController extends AbstractCrudController
         ];
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->showEntityActionsInlined();
+    }
     public function updateEntity(EntityManagerInterface $em, $entityInstance): void
     {
         if (!$entityInstance instanceof Device) {
