@@ -17,25 +17,6 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
         parent::__construct($registry, DeviceUsageLog::class);
     }
 
-    public function getDailyEnergySummary(User $user): array
-    {
-        $conn = $this->getEntityManager()->getConnection();
-
-        $sql = "
-            SELECT DATE(l.started_at) AS date, SUM(l.energy_used_kwh) AS total_energy
-            FROM device_usage_log l
-            INNER JOIN device d ON l.device_id = d.id
-            WHERE d.user_id = :userId
-            GROUP BY DATE(l.started_at)
-            ORDER BY DATE(l.started_at)
-        ";
-
-        $stmt = $conn->prepare($sql);
-        $result = $stmt->executeQuery(['userId' => $user->getId()]);
-
-        return $result->fetchAllAssociative();
-    }
-
     public function getDailyDeviceEnergySummary(User $user): array
     {
         $conn = $this->getEntityManager()->getConnection();
@@ -49,6 +30,7 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
             FROM device_usage_log dul
             JOIN device d ON d.id = dul.device_id
             WHERE d.user_id = :user
+             -- AND dul.started_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
             GROUP BY DATE(dul.started_at), d.id, d.name
             ORDER BY date ASC
         ";
@@ -59,6 +41,32 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative();
     }
 
+    public function getDeviceUsagePerIntervalForDay(User $user, \DateTime $day): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "
+            SELECT
+                d.name AS device,
+                d.id AS deviceId,
+                DATE_FORMAT(dul.started_at, '%H:%i') AS time_slot,
+                SUM(dul.energy_used_kwh) AS energy
+            FROM device_usage_log dul
+            JOIN device d ON d.id = dul.device_id
+            WHERE d.user_id = :user
+              AND DATE(dul.started_at) = :day
+            GROUP BY device, time_slot
+            ORDER BY time_slot ASC
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'user' => $user->getId(),
+            'day' => $day->format('Y-m-d'),
+        ]);
+
+        return $result->fetchAllAssociative();
+    }
 
     //    /**
     //     * @return DeviceUsageLog[] Returns an array of DeviceUsageLog objects

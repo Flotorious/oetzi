@@ -77,7 +77,7 @@ class UserDashboardController extends AbstractDashboardController
                 'deviceId' => $deviceId,
                 'backgroundColor' => $color,
                 'borderColor' => ColorHelper::generateColorFromString($deviceName, 1),
-                'borderWidth' => 1,
+                'borderWidth' => 1.5,
             ];
         }
 
@@ -109,6 +109,49 @@ class UserDashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/daily-device-usage-graph', name: 'graph_daily_device_usage')]
+    public function dailyDeviceUsageGraph(): Response
+    {
+        $user = $this->getUser();
+        $day = new \DateTime('2025-04-14');
+
+        //$day = new \DateTime('today');
+        $rawData = $this->deviceUsageLogRepository->getDeviceUsagePerIntervalForDay($user, $day);
+
+        $labels = array_unique(array_column($rawData, 'time_slot'));
+        sort($labels);
+
+        $byDevice = [];
+        $deviceIdMap = [];
+
+        foreach ($rawData as $row) {
+            $byDevice[$row['device']][$row['time_slot']] = (float) $row['energy'];
+            $deviceIdMap[$row['device']] = $row['deviceId'];
+        }
+
+        $datasets = [];
+        foreach ($byDevice as $deviceName => $valuesByTime) {
+            $values = array_map(fn($label) => $valuesByTime[$label] ?? 0, $labels);
+
+            $datasets[] = [
+                'label' => $deviceName,
+                'data' => $values,
+                'fill' => false,
+                'borderColor' => ColorHelper::generateColorFromString($deviceName, 1),
+                'backgroundColor' => ColorHelper::generateColorFromString($deviceName, 0.5),
+                'borderWidth' => 1.5,
+                'tension' => 0.3,
+            ];
+        }
+
+        return $this->render('graphs/daily_device_usage.html.twig', [
+            'chartData' => [
+                'labels' => $labels,
+                'datasets' => $datasets,
+            ],
+        ]);
+    }
+
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()->setTitle('User Dashboard');
@@ -120,8 +163,8 @@ class UserDashboardController extends AbstractDashboardController
 
         yield MenuItem::linkToDashboard('My Dashboard', 'fas fa-chart-line');
         yield MenuItem::subMenu('Graphs', 'fas fa-chart-bar')->setSubItems([
-            MenuItem::linkToRoute('Energy Graph', 'fas fa-bolt', 'graph_weekly_device_usage'),
-            MenuItem::linkToRoute('Device Graph', 'fas fa-microchip', 'graph_weekly_device_usage'),
+            MenuItem::linkToRoute('Energy Usage per week', 'fas fa-bolt', 'graph_weekly_device_usage'),
+            MenuItem::linkToRoute('Energy Usage per day', 'fas fa-microchip', 'graph_daily_device_usage'),
         ]);
         yield MenuItem::linkToUrl(
             'Edit Profile',
