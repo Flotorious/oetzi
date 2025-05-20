@@ -1,7 +1,7 @@
 import { startStimulusApp } from '@symfony/stimulus-bridge';
-import EnergyChartController from './energy_chart_controller.js';
+import WeeklyDeviceUsageController from './weekly_device_usage_controller.js';
 
 // Registers Stimulus controllers from controllers.json and in the controllers/ directory
 export const app = startStimulusApp();
 
-app.register('energy-chart', EnergyChartController);
+app.register('weekly-device-usage', WeeklyDeviceUsageController);

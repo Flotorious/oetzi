@@ -2,122 +2,136 @@
 
 namespace App\Controller\User;
 
-use AllowDynamicProperties;
 use App\Controller\Admin\UserCrudController;
 use App\Entity\Device;
 use App\Entity\DeviceUsageLog;
-use App\Entity\User;
 use App\Entity\UserEnergySnapshot;
 use App\Repository\DeviceRepository;
 use App\Repository\DeviceUsageLogRepository;
 use App\Repository\UserEnergySnapshotRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Utils\ColorHelper;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
-use Symfony\UX\Chartjs\Model\Chart;
 
-#[AllowDynamicProperties]
 #[AdminDashboard(routePath: '/profile', routeName: 'app_user_dashboard')]
 class UserDashboardController extends AbstractDashboardController
 {
     public function __construct(
         private readonly AdminUrlGenerator $adminUrlGenerator,
-        DeviceRepository $deviceRepository,
-        DeviceUsageLogRepository $deviceUsageLogRepository,
-        UserEnergySnapshotRepository $userEnergySnapshotRepository,
-        ChartBuilderInterface $chartBuilder,
-    )
-    {
-        $this->deviceRepository = $deviceRepository;
-        $this->deviceUsageLogRepository = $deviceUsageLogRepository;
-        $this->userEnergySnapshotRepository = $userEnergySnapshotRepository;
-        $this->chartBuilder = $chartBuilder;
-    }
+        private readonly DeviceRepository $deviceRepository,
+        private readonly DeviceUsageLogRepository $deviceUsageLogRepository,
+        private readonly UserEnergySnapshotRepository $userEnergySnapshotRepository,
+        private readonly ChartBuilderInterface $chartBuilder
+    ) {}
 
-    #[Route('/dashboard', name: 'user_dashboard_index')]
+    #[Route('/', name: 'user_dashboard_index')]
     public function index(): Response
     {
-        $data = $this->deviceUsageLogRepository->getDailyDeviceEnergySummary($this->getUser());
+        $user = $this->getUser();
+        $lastSnapshot = $this->userEnergySnapshotRepository->findOneBy(['user' => $user], ['timestamp' => 'DESC']);
+        return $this->render('user_dashboard/index.html.twig', [
+            'user' => $user,
+            'consumptionKwh' => $lastSnapshot?->getConsumptionKwh(),
+        ]);
+    }
 
-        $byDateDevice = [];
-        $deviceIdMap = [];
+    #[Route('/weekly-device-usage-graph', name: 'graph_weekly_device_usage')]
+    public function weeklyDeviceUsageGraph(): Response
+    {
+        $user = $this->getUser();
 
-        foreach ($data as $row) {
-            $date = $row['date'];
-            $device = $row['device'];
-            $deviceId = $row['deviceId'];
-            $energy = round($row['energy'], 2);
+        // Fetch raw data
+        $deviceData = $this->deviceUsageLogRepository->getDailyDeviceEnergySummary($user);
+        $lastSnapshot = $this->userEnergySnapshotRepository->findOneBy(['user' => $user], ['timestamp' => 'DESC']);
+        $unregisteredData = $this->userEnergySnapshotRepository->getUnregisteredConsumptionPerDay($user);
 
-            $byDateDevice[$device][$date] = $energy;
-            $deviceIdMap[$device] = $deviceId;
-        }
-
-        $labels = array_unique(array_column($data, 'date'));
+        $labels = array_unique(array_column($deviceData, 'date'));
         sort($labels);
 
+        // Organize device data
+        $byDeviceDate = [];
+        $deviceIdMap = [];
+        $differenceByDate = [];
+
+        foreach ($deviceData as $row) {
+            $byDeviceDate[$row['device']][$row['date']] = round($row['energy'], 2);
+            $deviceIdMap[$row['device']] = $row['deviceId'];
+        }
+
+        // Prepare chart datasets for devices
         $datasets = [];
-        foreach ($deviceIdMap as $device => $deviceId) {
-            $values = [];
-            foreach ($labels as $label) {
-                $values[] = $byDateDevice[$device][$label] ?? 0;
-            }
+        foreach ($deviceIdMap as $deviceName => $deviceId) {
+            $color = ColorHelper::generateColorFromString($deviceName, 0.6);
+            $values = array_map(fn($label) => $byDeviceDate[$deviceName][$label] ?? 0, $labels);
 
             $datasets[] = [
-                'label' => $device,
+                'label' => $deviceName,
                 'data' => $values,
                 'stack' => 'energy',
                 'deviceId' => $deviceId,
+                'backgroundColor' => $color,
+                'borderColor' => ColorHelper::generateColorFromString($deviceName, 1),
+                'borderWidth' => 1,
             ];
         }
 
-        $lastSnapshot = $this->userEnergySnapshotRepository->findOneBy(
-            ['user' => $this->getUser()],
-            ['timestamp' => 'DESC']
-        );
+        foreach ($differenceByDate as $row) {
+            $differenceByDate[$row['date']] = round($row['difference'], 2);
+        }
 
-        $lastKwh = $lastSnapshot ? $lastSnapshot->getConsumptionKwh() : null;
+        $unregisteredByDate = [];
+        foreach ($unregisteredData as $row) {
+            $unregisteredByDate[$row['date']] = max(round($row['difference'], 2), 0); // ensure >= 0
+        }
 
-        $userDevices = $this->deviceRepository->findBy(['user' => $this->getUser()]);
+        $unregisteredValues = array_map(fn($label) => $unregisteredByDate[$label] ?? 0, $labels);
 
-        return $this->render('user_dashboard/index.html.twig', [
-            'user' => $this->getUser(),
-            'consumptionKwh' => $lastKwh,
-            'dailyEnergySummary' => $data,
+        $datasets[] = [
+            'label' => 'Unregistered Consumption',
+            'data' => $unregisteredValues,
+            'stack' => 'energy',
+        ];
+
+        return $this->render('graphs/weekly_device_usage.html.twig', [
+            'user' => $user,
+            'consumptionKwh' => $lastSnapshot?->getConsumptionKwh(),
+            'dailyEnergySummary' => $deviceData,
             'chartData' => [
                 'labels' => $labels,
                 'datasets' => $datasets,
-            ],
-            'devices' => array_map(fn(Device $d) => [
-                'id' => $d->getId(),
-                'name' => $d->getName(),
-            ], $userDevices),
+            ]
         ]);
     }
 
     public function configureDashboard(): Dashboard
     {
-        return Dashboard::new()
-            ->setTitle('User Dashboard');
+        return Dashboard::new()->setTitle('User Dashboard');
     }
 
     public function configureMenuItems(): iterable
     {
         $userId = $this->getUser()->getId();
 
-        $editProfileUrl = $this->adminUrlGenerator
-            ->setController(UserCrudController::class)
-            ->setAction('edit')
-            ->setEntityId($userId)
-            ->generateUrl();
-
         yield MenuItem::linkToDashboard('My Dashboard', 'fas fa-chart-line');
-        yield MenuItem::linkToUrl('Edit Profile', 'fa fa-user', $editProfileUrl);
+        yield MenuItem::subMenu('Graphs', 'fas fa-chart-bar')->setSubItems([
+            MenuItem::linkToRoute('Energy Graph', 'fas fa-bolt', 'graph_weekly_device_usage'),
+            MenuItem::linkToRoute('Device Graph', 'fas fa-microchip', 'graph_weekly_device_usage'),
+        ]);
+        yield MenuItem::linkToUrl(
+            'Edit Profile',
+            'fa fa-user',
+            $this->adminUrlGenerator
+                ->setController(UserCrudController::class)
+                ->setAction('edit')
+                ->setEntityId($userId)
+                ->generateUrl()
+        );
         yield MenuItem::linkToCrud('My Devices', 'fas fa-microchip', Device::class);
         yield MenuItem::linkToCrud('Usage Logs', 'fa fa-clock', DeviceUsageLog::class);
         yield MenuItem::linkToCrud('Energy Logs', 'fa fa-clock', UserEnergySnapshot::class);
