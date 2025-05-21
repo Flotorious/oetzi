@@ -29,7 +29,7 @@ class RegisterController extends AbstractController
             $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
             $user->setPassword($hashedPassword);
             $user->setRoles(['ROLE_USER']);
-            $user->setFeedUrl("http://caddy/fake-provider/" + $user->getId());
+            $user->setFeedUrl("http://caddy/fake-provider/");
 
             $em->persist($user);
             $em->flush();
