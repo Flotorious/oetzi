@@ -25,6 +25,7 @@
         "@symfony/ux-turbo": "^2.24.0",
         "bootstrap": "^5.3.6",
         "chart.js": "^4.4.9",
+        "chartjs-plugin-zoom": "^2.2.0",
         "tiny-slider": "^2.9.4"
     }
 }
