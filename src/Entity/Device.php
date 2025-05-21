@@ -22,14 +22,14 @@ class Device
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(nullable: false)]
+    private ?float $powerWatt = null;
+
     #[ORM\Column(type: 'boolean')]
     private ?bool $isActive = false;
 
     #[ORM\ManyToOne(inversedBy: 'devices')]
     private ?User $user = null;
-
-    #[ORM\Column(nullable: false)]
-    private ?float $powerWatt = null;
 
     /**
      * @var Collection<int, DeviceUsageLog>

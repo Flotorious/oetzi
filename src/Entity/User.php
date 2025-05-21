@@ -51,7 +51,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $meterIdentifier = null;
 
-    #[ORM\OneToMany(targetEntity: Device::class, mappedBy: 'user')]
+    #[ORM\OneToMany(
+        targetEntity: Device::class,
+        mappedBy: 'user',
+        cascade: ['remove'],
+        orphanRemoval: true
+    )]
     private Collection $devices;
 
     #[ORM\Column(length: 255, nullable: true)]

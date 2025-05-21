@@ -23,8 +23,12 @@ class UserCrudController extends AbstractCrudController
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
-        $userId = $this->getUser()->getId();
+        // If the user has ROLE_ADMIN, skip the filter entirely:
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+        }
 
+        $userId = $this->getUser()->getId();
         return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters)
             ->andWhere('entity.id = :userId')
             ->setParameter('userId', $userId);
@@ -34,7 +38,7 @@ class UserCrudController extends AbstractCrudController
     {
         $entity = parent::findOneEntity($entityId);
 
-        if ($entity instanceof User && $entity->getId() !== $this->getUser()->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $entity instanceof User && $entity->getId() !== $this->getUser()->getId()) {
             throw new AccessDeniedException('You cannot access this user.');
         }
 
@@ -43,6 +47,10 @@ class UserCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $actions;
+        }
+
         return $actions
             ->disable(Action::NEW, Action::DELETE, Action::BATCH_DELETE);
     }
