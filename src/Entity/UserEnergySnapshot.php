@@ -24,6 +24,9 @@ class UserEnergySnapshot
     #[ORM\Column]
     private ?float $consumptionKwh = null;
 
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    private ?float $consumptionDelta = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -69,6 +72,17 @@ class UserEnergySnapshot
     {
         $this->consumptionKwh = $consumptionKwh;
 
+        return $this;
+    }
+
+    public function getConsumptionDelta(): ?float
+    {
+        return $this->consumptionDelta;
+    }
+
+    public function setConsumptionDelta(?float $value): static
+    {
+        $this->consumptionDelta = $value;
         return $this;
     }
 }

@@ -36,6 +36,24 @@ final readonly class FetchEnergyFeedMessageHandler
                 $snapshot->setTimestamp(new \DateTimeImmutable($data['timestamp']));
                 $snapshot->setConsumptionKwh($data['consumption_kwh']);
 
+                $previousSnapshot = $this->em->getRepository(UserEnergySnapshot::class)
+                    ->createQueryBuilder('s')
+                    ->where('s.user = :user')
+                    ->andWhere('s.timestamp < :timestamp')
+                    ->setParameter('user', $user)
+                    ->setParameter('timestamp', $snapshot->getTimestamp())
+                    ->orderBy('s.timestamp', 'DESC')
+                    ->setMaxResults(1)
+                    ->getQuery()
+                    ->getOneOrNullResult();
+
+                if ($previousSnapshot) {
+                    $delta = $snapshot->getConsumptionKwh() - $previousSnapshot->getConsumptionKwh();
+                    $snapshot->setConsumptionDelta($delta >= 0 ? round($delta, 4) : 0);
+                } else {
+                    $snapshot->setConsumptionDelta(null);
+                }
+
                 $this->em->persist($snapshot);
             } catch (\Throwable $e) {}
         }
