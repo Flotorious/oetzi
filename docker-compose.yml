@@ -6,10 +6,13 @@ services:
     container_name: symfony-app
     volumes:
       - .:/srv/app
+      - /etc/localtime:/etc/localtime:ro
+      - ./docker/php/timezone.ini:/usr/local/etc/php/conf.d/timezone.ini:ro
     working_dir: /srv/app
     environment:
-      APP_ENV: dev
-      APP_DEBUG: 1
+      - APP_ENV=dev
+      - APP_DEBUG=1
+      - TZ=Europe/Vienna
     depends_on:
       - database
 
@@ -51,8 +54,11 @@ services:
     build:
       context: .docker/php
     container_name: consumer-app
+    environment:
+      - TZ=Europe/Vienna
     volumes:
       - .:/srv/app
+      - ./docker/php/timezone.ini:/usr/local/etc/php/conf.d/timezone.ini:ro
     working_dir: /srv/app
     depends_on:
       - app
