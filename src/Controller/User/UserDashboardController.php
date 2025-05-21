@@ -5,6 +5,7 @@ namespace App\Controller\User;
 use App\Controller\Admin\UserCrudController;
 use App\Entity\Device;
 use App\Entity\DeviceUsageLog;
+use App\Entity\PriceRatePeriod;
 use App\Entity\UserEnergySnapshot;
 use App\Repository\DeviceRepository;
 use App\Repository\DeviceUsageLogRepository;
@@ -184,6 +185,52 @@ class UserDashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/weekly-energy-price-graph', name: 'graph_weekly_energy_price')]
+    public function weeklyEnergyPriceGraph(): Response
+    {
+        $user = $this->getUser();
+
+        $startDate = new \DateTimeImmutable('2025-01-21 00:00:00');
+        $endDate   = new \DateTimeImmutable('2025-05-30 23:59:59');
+
+        $raw = $this->userEnergySnapshotRepository
+            ->getWeeklyCostByPeriod($user, $startDate, $endDate);
+
+        $weeks = array_unique(array_column($raw, 'week_start'));
+        sort($weeks);
+
+        $periods = array_unique(array_column($raw, 'period'));
+
+        $costBy = [];
+        foreach ($raw as $row) {
+            $costBy[$row['period']][$row['week_start']] = round((float)$row['cost'], 2);
+        }
+
+        $datasets = [];
+        foreach ($periods as $periodName) {
+            $data = array_map(
+                fn($wk) => $costBy[$periodName][$wk] ?? 0,
+                $weeks
+            );
+
+            $datasets[] = [
+                'label'           => $periodName,
+                'data'            => $data,
+                'stack'           => 'price',
+                'backgroundColor' => ColorHelper::generateColorFromString($periodName, 0.6),
+                'borderColor'     => ColorHelper::generateColorFromString($periodName, 1),
+                'borderWidth'     => 1,
+            ];
+        }
+
+        return $this->render('graphs/weekly_energy_price.html.twig', [
+            'chartData' => [
+                'labels'   => $weeks,
+                'datasets' => $datasets,
+            ],
+        ]);
+    }
+
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()->setTitle('User Dashboard');
@@ -195,9 +242,10 @@ class UserDashboardController extends AbstractDashboardController
 
         yield MenuItem::linkToDashboard('My Dashboard', 'fas fa-chart-line');
         yield MenuItem::subMenu('Graphs', 'fas fa-chart-bar')->setSubItems([
-            MenuItem::linkToRoute('Energy Usage per week', 'fas fa-bolt', 'graph_weekly_device_usage'),
             MenuItem::linkToRoute('Logged Usage / day', 'fas fa-microchip', 'graph_daily_device_usage'),
+            MenuItem::linkToRoute('Energy Usage / week', 'fas fa-bolt', 'graph_weekly_device_usage'),
             MenuItem::linkToRoute('Energy Usage / day', 'fas fa-calendar', 'graph_daily_energy_usage'),
+            MenuItem::linkToRoute('Energy Price / week', 'fas fa-euro', 'graph_weekly_energy_price'),
         ]);
         yield MenuItem::linkToUrl(
             'Edit Profile',
@@ -211,5 +259,6 @@ class UserDashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('My Devices', 'fas fa-microchip', Device::class);
         yield MenuItem::linkToCrud('Usage Logs', 'fa fa-clock', DeviceUsageLog::class);
         yield MenuItem::linkToCrud('Energy Logs', 'fa fa-clock', UserEnergySnapshot::class);
+        yield MenuItem::linkToCrud('Price Rate', 'fa fa-clock', PriceRatePeriod::class);
     }
 }

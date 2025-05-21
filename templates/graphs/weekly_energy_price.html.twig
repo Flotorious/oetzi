@@ -1,0 +1,24 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+{% endblock %}
+
+{% block main %}
+    <div class="ea-content">
+        <div class="col-12">
+            <div data-controller="weekly-energy-price"
+                 data-weekly-energy-price-chart-value="{{ chartData|json_encode|e('html_attr') }}"
+                 class="position-relative"
+            >
+                <canvas data-weekly-energy-price-target="canvas" class="w-100" ></canvas>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}
+
+

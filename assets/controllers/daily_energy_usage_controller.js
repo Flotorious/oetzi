@@ -1,4 +1,3 @@
-// assets/controllers/line_chart_controller.js
 import { Controller } from '@hotwired/stimulus';
 import Chart from 'chart.js/auto';
 import zoomPlugin from 'chartjs-plugin-zoom';
@@ -28,6 +27,10 @@ export default class extends Controller {
                     }
                 },
                 plugins: {
+                    title: {
+                        display: true,
+                        text: 'Daily energy usage',
+                    },
                     zoom: {
                         pan: {
                             enabled: true,       // enable panning
