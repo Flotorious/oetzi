@@ -24,10 +24,8 @@ class UserDashboardController extends AbstractDashboardController
 {
     public function __construct(
         private readonly AdminUrlGenerator $adminUrlGenerator,
-        private readonly DeviceRepository $deviceRepository,
         private readonly DeviceUsageLogRepository $deviceUsageLogRepository,
         private readonly UserEnergySnapshotRepository $userEnergySnapshotRepository,
-        private readonly ChartBuilderInterface $chartBuilder
     ) {}
 
     #[Route('/', name: 'user_dashboard_index')]
@@ -152,6 +150,40 @@ class UserDashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/daily-energy-usage-graph', name: 'graph_daily_energy_usage')]
+    public function dailyEnergyUsageGraph(): Response
+    {
+        $user = $this->getUser();
+        $day = new \DateTime('2025-05-20');
+
+        //$day = new \DateTime('today');
+        $rawData = $this->userEnergySnapshotRepository->getEnergyUsagePerDay($user, $day);
+
+        $labels = [];
+        $data = [];
+
+        foreach ($rawData as $snapshot) {
+            $labels[] = $snapshot->getTimestamp()->format('H:i');
+            $data[] = $snapshot->getConsumptionDelta();
+        }
+
+        $datasets = [[
+            'label' => 'Consumption Δ (kWh)',
+            'data' => $data,
+            'borderColor' => 'rgba(75, 192, 192, 1)',
+            'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+            'fill' => true,
+            'tension' => 0.3,
+        ]];
+
+        return $this->render('graphs/daily_energy_usage.html.twig', [
+            'chartData' => [
+                'labels' => $labels,
+                'datasets' => $datasets,
+            ],
+        ]);
+    }
+
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()->setTitle('User Dashboard');
@@ -164,7 +196,8 @@ class UserDashboardController extends AbstractDashboardController
         yield MenuItem::linkToDashboard('My Dashboard', 'fas fa-chart-line');
         yield MenuItem::subMenu('Graphs', 'fas fa-chart-bar')->setSubItems([
             MenuItem::linkToRoute('Energy Usage per week', 'fas fa-bolt', 'graph_weekly_device_usage'),
-            MenuItem::linkToRoute('Energy Usage per day', 'fas fa-microchip', 'graph_daily_device_usage'),
+            MenuItem::linkToRoute('Logged Usage / day', 'fas fa-microchip', 'graph_daily_device_usage'),
+            MenuItem::linkToRoute('Energy Usage / day', 'fas fa-calendar', 'graph_daily_energy_usage'),
         ]);
         yield MenuItem::linkToUrl(
             'Edit Profile',

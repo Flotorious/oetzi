@@ -49,6 +49,43 @@ class UserEnergySnapshotRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative(); // date => difference
     }
 
+    public function getEnergyUsagePerDay(User $user, \DateTimeInterface $day): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->where('s.user = :user')
+            ->andWhere('s.timestamp BETWEEN :start AND :end')
+            ->setParameter('user', $user)
+            ->setParameter('start', (clone $day)->setTime(7, 59, 59))
+            ->setParameter('end', (clone $day)->setTime(23, 59, 59))
+            ->orderBy('s.timestamp', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function getEnergyUsagePerDay2(User $user, \DateTimeInterface $day): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT 
+            s.timestamp,
+            s.consumption_delta
+        FROM user_energy_snapshot s
+        WHERE s.user_id = :userId
+          AND s.timestamp BETWEEN :start AND :end
+        ORDER BY s.timestamp ASC
+    ';
+
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'userId' => $user->getId(),
+            'start' => $day->format('Y-m-d 00:00:00'),
+            'end' => $day->format('Y-m-d 23:59:59'),
+        ]);
+
+        return $result->fetchAllAssociative(); // ['timestamp' => ..., 'consumption_delta' => ...]
+    }
+
 
     //    /**
     //     * @return UserEnergySnapshot[] Returns an array of UserEnergySnapshot objects
