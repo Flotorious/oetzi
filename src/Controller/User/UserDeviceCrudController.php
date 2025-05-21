@@ -124,7 +124,10 @@ class UserDeviceCrudController extends AbstractCrudController
             BooleanField::new('isActive', 'Active'),
             CollectionField::new('deviceUsageLogs')
                 ->useEntryCrudForm(DeviceUsageLogCrudController::class)
-                ->setFormTypeOptions(['by_reference' => false])
+                ->setFormTypeOptions([
+                    'by_reference' => false,
+                ])
+                ->setColumns('col-md-12 col-xxl-12')
                 ->onlyOnForms()
         ];
     }

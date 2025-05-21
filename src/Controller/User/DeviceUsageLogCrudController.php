@@ -22,11 +22,15 @@ class DeviceUsageLogCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
+            TextField::new('device', 'Device')
+                ->onlyOnIndex(),
             TextField::new('title'),
             DateTimeField::new('startedAt'),
             DateTimeField::new('endedAt'),
-            IntegerField::new('duration'),
-            NumberField::new('energyUsedKWh')
+            IntegerField::new('duration')->setDisabled(true),
+            NumberField::new('energyUsedKWh', label: 'KWh used')->setDisabled(true),
+            TextField::new('device.user.email', 'Owner')
+                ->onlyOnIndex()
         ];
     }
 }
