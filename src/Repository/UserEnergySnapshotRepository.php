@@ -64,6 +64,31 @@ class UserEnergySnapshotRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function getMonthlyEnergyUsage(User $user, \DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT
+                DATE_FORMAT(s.timestamp, "%Y-%m") AS month,
+                SUM(s.consumption_delta) AS total
+            FROM user_energy_snapshot s
+            WHERE s.user_id = :user
+              AND s.timestamp BETWEEN :start AND :end
+            GROUP BY month
+            ORDER BY month
+        ';
+
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'user' => $user->getId(),
+            'start' => $start->format('Y-m-d H:i:s'),
+            'end' => $end->format('Y-m-d H:i:s'),
+        ]);
+
+        return $result->fetchAllAssociative();
+    }
+
     public function getWeeklyCostByPeriod(User $user, \DateTimeImmutable $start, \DateTimeImmutable $end): array
     {
         $conn = $this->getEntityManager()->getConnection();

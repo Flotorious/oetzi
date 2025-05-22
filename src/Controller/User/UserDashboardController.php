@@ -195,6 +195,53 @@ class UserDashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/monthly-energy-usage-graph', name: 'graph_monthly_energy_usage')]
+    public function monthlyEnergyUsageGraph(): Response
+    {
+        $user = $this->getUser();
+
+        $start = new \DateTimeImmutable('2025-01-01');
+        $end = new \DateTimeImmutable('2025-05-31 23:59:59');
+
+        $rawData = $this->userEnergySnapshotRepository->getMonthlyEnergyUsage($user, $start, $end);
+
+        $months = [];
+        $totals = [];
+
+        $period = new \DatePeriod(
+            $start->modify('first day of this month'),
+            new \DateInterval('P1M'),
+            $end->modify('first day of next month')
+        );
+
+        foreach ($period as $month) {
+            $key = $month->format('Y-m');
+            $months[] = $key;
+            $totals[$key] = 0;
+        }
+
+        foreach ($rawData as $row) {
+            $totals[$row['month']] = round((float)$row['total'], 2);
+        }
+
+        $data = array_values($totals);
+
+        $datasets = [[
+            'label' => 'Monthly Consumption (kWh)',
+            'data' => $data,
+            'backgroundColor' => 'rgba(54, 162, 235, 0.6)',
+            'borderColor' => 'rgba(54, 162, 235, 1)',
+            'borderWidth' => 1,
+        ]];
+
+        return $this->render('graphs/monthly_energy_usage.html.twig', [
+            'chartData' => [
+                'labels' => $months,
+                'datasets' => $datasets,
+            ],
+        ]);
+    }
+
     #[Route('/weekly-energy-price-graph', name: 'graph_weekly_energy_price')]
     public function weeklyEnergyPriceGraph(): Response
     {
@@ -301,6 +348,7 @@ class UserDashboardController extends AbstractDashboardController
             MenuItem::linkToRoute('Logged Usage / day', 'fas fa-microchip', 'graph_daily_device_usage'),
             MenuItem::linkToRoute('Energy Usage / week', 'fas fa-bolt', 'graph_weekly_device_usage'),
             MenuItem::linkToRoute('Energy Usage / day', 'fas fa-calendar', 'graph_daily_energy_usage'),
+            MenuItem::linkToRoute('Energy Usage / month', 'fas fa-calendar', 'graph_monthly_energy_usage'),
             MenuItem::linkToRoute('Energy Price / week', 'fas fa-euro', 'graph_weekly_energy_price'),
             MenuItem::linkToRoute('Energy Price / month', 'fas fa-euro', 'graph_monthly_energy_price'),
         ]);
