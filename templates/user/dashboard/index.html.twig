@@ -1,0 +1,229 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+{% endblock %}
+
+{% block content_top_header %}
+    <div class="bg-black text-white">
+        test
+    </div>
+    {{ parent() }}
+{% endblock %}
+
+{% block main %}
+    <div class="ea-content">
+        <section class="pb-3 pb-md-4 pb-xl-5">
+            <div class="row gy-3 gy-md-4">
+                <div class="col-12 col-lg-6 col-xl-7">
+                    <!-- Chart 1 - Bootstrap Brain Component -->
+                    <div class="card widget-card border-light shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h5 class="card-title">Profile Details</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item"><strong>MeterId:</strong> {{ user.userIdentifier }}</li>
+                                <li class="list-group-item">
+                                    <strong>Name:</strong> {{ user.firstName }} {{ user.lastName }}</li>
+                                <li class="list-group-item"><strong>Current consumption:</strong> {{ consumptionKwh }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Section - Bootstrap Brain Component -->
+        <!-- Card 1 - Bootstrap Brain Component -->
+        <section class="pb-3 pb-md-4 pb-xl-5">
+            <div class="row gy-3 gy-md-4">
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card widget-card border-light shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-8">
+                                    <h5 class="card-title widget-card-title mb-3">Consumption</h5>
+                                    <h4 class="card-subtitle text-body-secondary m-0">-9%</h4>
+                                </div>
+                                <div class="col-4">
+                                    <div class="d-flex justify-content-end">
+                                        <div
+                                            class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-truck fs-4"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center mt-3">
+                      <span
+                          class="lh-1 me-3 bg-danger-subtle text-danger rounded-circle p-1 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-arrow-right-short bsb-rotate-45"></i>
+                      </span>
+                                        <div>
+                                            <p class="fs-7 mb-0 text-secondary">since last week</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card widget-card border-light shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-8">
+                                    <h5 class="card-title widget-card-title mb-3">Earnings</h5>
+                                    <h4 class="card-subtitle text-body-secondary m-0">€100</h4>
+                                </div>
+                                <div class="col-4">
+                                    <div class="d-flex justify-content-end">
+                                        <div
+                                            class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-currency-dollar fs-4"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center mt-3">
+                      <span
+                          class="lh-1 me-3 bg-success-subtle text-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-arrow-right-short bsb-rotate-n45"></i>
+                      </span>
+                                        <div>
+                                            <p class="fs-7 mb-0 text-secondary">since last week</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card widget-card border-light shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-8">
+                                    <h5 class="card-title widget-card-title mb-3">Devices</h5>
+                                    <h4 class="card-subtitle text-body-secondary m-0">+3</h4>
+                                </div>
+                                <div class="col-4">
+                                    <div class="d-flex justify-content-end">
+                                        <div
+                                            class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-person fs-4"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center mt-3">
+                      <span
+                          class="lh-1 me-3 bg-success-subtle text-success rounded-circle p-1 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-arrow-right-short bsb-rotate-n45"></i>
+                      </span>
+                                        <div>
+                                            <p class="fs-7 mb-0 text-secondary">since last week</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card widget-card border-light shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-8">
+                                    <h5 class="card-title widget-card-title mb-3">Logs</h5>
+                                    <h4 class="card-subtitle text-body-secondary m-0">-10%</h4>
+                                </div>
+                                <div class="col-4">
+                                    <div class="d-flex justify-content-end">
+                                        <div
+                                            class="lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-cart fs-4"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center mt-3">
+                      <span
+                          class="lh-1 me-3 bg-danger-subtle text-danger rounded-circle p-1 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-arrow-right-short bsb-rotate-45"></i>
+                      </span>
+                                        <div>
+                                            <p class="fs-7 mb-0 text-secondary">since last week</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section - Bootstrap Brain Component -->
+        <section class="pb-3 pb-md-4 pb-xl-5">
+            <div class="row gy-3 gy-md-4">
+                <div class="col-12 col-lg-6 col-xl-7">
+                    <!-- Chart 1 - Bootstrap Brain Component -->
+                    <div class="card widget-card border-light shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                <div class="mb-3 mb-sm-0">
+                                    <h5 class="card-title widget-card-title">Consumption Overview</h5>
+                                </div>
+                                <div>
+                                    <select class="form-select text-secondary border-light-subtle">
+                                        <option value="1">March 2025</option>
+                                        <option value="2">April 2025</option>
+                                        <option value="3">May 2025</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="bsb-chart-1"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 col-xl-5">
+                    <!-- Chart 4 - Bootstrap Brain Component -->
+                    <div class="card widget-card border-light shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-block d-sm-flex align-items-center justify-content-between mb-3">
+                                <div class="mb-3 mb-sm-0">
+                                    <h5 class="card-title widget-card-title">Logged Devices</h5>
+                                </div>
+                                <div>
+                                    <select class="form-select text-secondary border-light-subtle">
+                                        <option value="1">March 2023</option>
+                                        <option value="2">April 2023</option>
+                                        <option value="3">May 2023</option>
+                                        <option value="4">June 2023</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="bsb-chart-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}
+
+

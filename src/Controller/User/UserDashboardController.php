@@ -37,7 +37,7 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
         $lastSnapshot = $this->userEnergySnapshotRepository->findOneBy(['user' => $user], ['timestamp' => 'DESC']);
-        return $this->render('user_dashboard/index.html.twig', [
+        return $this->render('user/dashboard/index.html.twig', [
             'user' => $user,
             'consumptionKwh' => $lastSnapshot?->getConsumptionKwh(),
         ]);
@@ -100,7 +100,7 @@ class UserDashboardController extends AbstractDashboardController
             'stack' => 'energy',
         ];
 
-        return $this->render('graphs/weekly_device_usage.html.twig', [
+        return $this->render('user/graphs/weekly_device_usage.html.twig', [
             'user' => $user,
             'consumptionKwh' => $lastSnapshot?->getConsumptionKwh(),
             'dailyEnergySummary' => $deviceData,
@@ -152,7 +152,7 @@ class UserDashboardController extends AbstractDashboardController
             ];
         }
 
-        return $this->render('graphs/daily_device_usage.html.twig', [
+        return $this->render('user/graphs/daily_device_usage.html.twig', [
             'chartData' => [
                 'labels' => $labels,
                 'datasets' => $datasets,
@@ -187,7 +187,7 @@ class UserDashboardController extends AbstractDashboardController
             'tension' => 0.3,
         ]];
 
-        return $this->render('graphs/daily_energy_usage.html.twig', [
+        return $this->render('user/graphs/daily_energy_usage.html.twig', [
             'chartData' => [
                 'labels' => $labels,
                 'datasets' => $datasets,
@@ -234,7 +234,7 @@ class UserDashboardController extends AbstractDashboardController
             'borderWidth' => 1,
         ]];
 
-        return $this->render('graphs/monthly_energy_usage.html.twig', [
+        return $this->render('user/graphs/monthly_energy_usage.html.twig', [
             'chartData' => [
                 'labels' => $months,
                 'datasets' => $datasets,
@@ -280,7 +280,7 @@ class UserDashboardController extends AbstractDashboardController
             ];
         }
 
-        return $this->render('graphs/weekly_energy_price.html.twig', [
+        return $this->render('user/graphs/weekly_energy_price.html.twig', [
             'chartData' => [
                 'labels'   => $weeks,
                 'datasets' => $datasets,
@@ -326,7 +326,7 @@ class UserDashboardController extends AbstractDashboardController
             ];
         }
 
-        return $this->render('graphs/weekly_energy_price.html.twig', [
+        return $this->render('user/graphs/weekly_energy_price.html.twig', [
             'chartData' => [
                 'labels'   => $months,
                 'datasets' => $datasets,

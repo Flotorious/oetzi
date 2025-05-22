@@ -3,7 +3,7 @@ FROM php:8.2-fpm
 # install tzdata and set Europe/Vienna
 RUN apt-get update \
  && apt-get install -y tzdata \
- && ln -snf /usr/share/zoneinfo/Europe/Bucharest /etc/localtime \
+ && ln -snf /usr/share/zoneinfo/Europe/Vienna /etc/localtime \
  && echo 'Europe/Vienna' > /etc/timezone \
  && dpkg-reconfigure -f noninteractive tzdata \
  && apt-get clean \
