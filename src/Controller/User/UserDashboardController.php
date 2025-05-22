@@ -241,6 +241,52 @@ class UserDashboardController extends AbstractDashboardController
         ]);
     }
 
+    #[Route('/monthly-energy-price-graph', name: 'graph_monthly_energy_price')]
+    public function monthlyEnergyPriceGraph(): Response
+    {
+        $user = $this->getUser();
+
+        $startDate = new \DateTimeImmutable('2025-01-21 00:00:00');
+        $endDate   = new \DateTimeImmutable('2025-05-30 23:59:59');
+
+        $raw = $this->userEnergySnapshotRepository
+            ->getMonthlyCostByPeriod($user, $startDate, $endDate);
+
+        $months = array_unique(array_column($raw, 'month'));
+        sort($months);
+
+        $periods = array_unique(array_column($raw, 'period'));
+
+        $costBy = [];
+        foreach ($raw as $row) {
+            $costBy[$row['period']][$row['month']] = round((float)$row['cost'], 2);
+        }
+
+        $datasets = [];
+        foreach ($periods as $periodName) {
+            $data = array_map(
+                fn($month) => $costBy[$periodName][$month] ?? 0,
+                $months
+            );
+
+            $datasets[] = [
+                'label'           => $periodName,
+                'data'            => $data,
+                'stack'           => 'price',
+                'backgroundColor' => ColorHelper::generateColorFromString($periodName, 0.6),
+                'borderColor'     => ColorHelper::generateColorFromString($periodName, 1),
+                'borderWidth'     => 1,
+            ];
+        }
+
+        return $this->render('graphs/weekly_energy_price.html.twig', [
+            'chartData' => [
+                'labels'   => $months,
+                'datasets' => $datasets,
+            ],
+        ]);
+    }
+
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()->setTitle('User Dashboard');
@@ -256,6 +302,7 @@ class UserDashboardController extends AbstractDashboardController
             MenuItem::linkToRoute('Energy Usage / week', 'fas fa-bolt', 'graph_weekly_device_usage'),
             MenuItem::linkToRoute('Energy Usage / day', 'fas fa-calendar', 'graph_daily_energy_usage'),
             MenuItem::linkToRoute('Energy Price / week', 'fas fa-euro', 'graph_weekly_energy_price'),
+            MenuItem::linkToRoute('Energy Price / month', 'fas fa-euro', 'graph_monthly_energy_price'),
         ]);
         yield MenuItem::linkToUrl(
             'Edit Profile',

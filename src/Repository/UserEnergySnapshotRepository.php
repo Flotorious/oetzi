@@ -104,6 +104,46 @@ class UserEnergySnapshotRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative();
     }
 
+    public function getMonthlyCostByPeriod(User $user, \DateTimeImmutable $start, \DateTimeImmutable $end): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT
+              DATE_FORMAT(u.timestamp, "%Y-%m") AS month,
+              p.name AS period,
+              SUM(u.consumption_delta * p.price_per_kwh) AS cost
+            FROM user_energy_snapshot u
+            JOIN price_rate_period p
+              ON (
+                  p.end_time > p.start_time
+                  AND TIME(u.timestamp) BETWEEN p.start_time AND p.end_time
+                 )
+                 OR (
+                p.end_time <= p.start_time
+                AND (
+                    TIME(u.timestamp) >= p.start_time
+                    OR TIME(u.timestamp) <= p.end_time
+                )
+            )
+            WHERE u.user_id = :user_id
+            AND u.timestamp BETWEEN :start AND :end
+            GROUP BY month, p.id, p.name
+            ORDER BY month ASC, p.id ASC;
+        ';
+
+        $stmt   = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'user_id' => $user->getId(),
+            'start'   => $start->format('Y-m-d 00:00:00'),
+            'end'     => $end->  format('Y-m-d 23:59:59'),
+        ]);
+
+        return $result->fetchAllAssociative();
+    }
+
+
+
     //    /**
     //     * @return UserEnergySnapshot[] Returns an array of UserEnergySnapshot objects
     //     */
