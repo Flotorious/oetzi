@@ -2,6 +2,7 @@
 
 namespace App\Controller\User;
 
+use App\Controller\Admin\PriceRatePeriodCrudController;
 use App\Controller\Admin\UserCrudController;
 use App\Entity\Device;
 use App\Entity\DeviceUsageLog;
@@ -9,6 +10,7 @@ use App\Entity\PriceRatePeriod;
 use App\Entity\UserEnergySnapshot;
 use App\Repository\DeviceRepository;
 use App\Repository\DeviceUsageLogRepository;
+use App\Repository\PriceRatePeriodRepository;
 use App\Repository\UserEnergySnapshotRepository;
 use App\Utils\ColorHelper;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
@@ -27,6 +29,7 @@ class UserDashboardController extends AbstractDashboardController
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly DeviceUsageLogRepository $deviceUsageLogRepository,
         private readonly UserEnergySnapshotRepository $userEnergySnapshotRepository,
+        private readonly PriceRatePeriodRepository $priceRatePeriodRepository,
     ) {}
 
     #[Route('/', name: 'user_dashboard_index')]
@@ -112,20 +115,26 @@ class UserDashboardController extends AbstractDashboardController
     public function dailyDeviceUsageGraph(): Response
     {
         $user = $this->getUser();
-        $day = new \DateTime('2025-04-14');
+        $day = new \DateTime('2025-05-21');
 
-        //$day = new \DateTime('today');
         $rawData = $this->deviceUsageLogRepository->getDeviceUsagePerIntervalForDay($user, $day);
+        $priceRateBandsData = $this->priceRatePeriodRepository->getTimeBandsForChart();
 
-        $labels = array_unique(array_column($rawData, 'time_slot'));
-        sort($labels);
+        $priceRateBands = array_map(function ($band) {
+            return [
+                'start' => $band['start']->format('H:i'),
+                'end' => $band['end']->format('H:i'),
+                'color' => ColorHelper::generateColorFromString('Band-' . $band['start']->format('H:i'), 0.1),
+            ];
+        }, $priceRateBandsData);
+
+        $labels = array_column($rawData, 'time_slot');
+        $labels = array_unique($labels);
+        sort($labels); // Optional: ensures correct chronological order
 
         $byDevice = [];
-        $deviceIdMap = [];
-
         foreach ($rawData as $row) {
             $byDevice[$row['device']][$row['time_slot']] = (float) $row['energy'];
-            $deviceIdMap[$row['device']] = $row['deviceId'];
         }
 
         $datasets = [];
@@ -139,7 +148,7 @@ class UserDashboardController extends AbstractDashboardController
                 'borderColor' => ColorHelper::generateColorFromString($deviceName, 1),
                 'backgroundColor' => ColorHelper::generateColorFromString($deviceName, 0.5),
                 'borderWidth' => 1.5,
-                'tension' => 0.3,
+                'tension' => 0.1,
             ];
         }
 
@@ -147,6 +156,7 @@ class UserDashboardController extends AbstractDashboardController
             'chartData' => [
                 'labels' => $labels,
                 'datasets' => $datasets,
+                'priceRateBands' => $priceRateBands,
             ],
         ]);
     }

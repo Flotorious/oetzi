@@ -16,6 +16,15 @@ class PriceRatePeriodRepository extends ServiceEntityRepository
         parent::__construct($registry, PriceRatePeriod::class);
     }
 
+    public function getTimeBandsForChart(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.startTime as start, p.endTime as end')
+            ->orderBy('p.startTime', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+    }
+
     //    /**
     //     * @return PriceRatePeriod[] Returns an array of PriceRatePeriod objects
     //     */
