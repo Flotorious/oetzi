@@ -1,4 +1,4 @@
-http://:80 {
+http://energyviz.localhost:80 {
     root * /srv/app/public
     php_fastcgi app:9000
     file_server

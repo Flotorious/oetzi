@@ -7,7 +7,7 @@
     <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
         <div class="container">
             <a class="navbar-brand" href="{{ path('app_home') }}">
-                <img src="{{ asset('img/logo-white.png') }}" />
+                <img src="{{ asset('build/images/logo-white.png') }}" />
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni"
@@ -32,7 +32,7 @@
                     {% if is_granted('ROLE_USER') %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_user_dashboard') }}">
-                                <img src="{{ asset('img/user.svg') }}" alt="Profile">
+                                <img src="{{ asset('build/images/user.svg') }}" alt="Profile">
                             </a>
                         </li>
                     {% else %}
@@ -66,7 +66,7 @@
                 </div>
                 <div class="col-lg-7">
                     <div class="hero-img-wrap">
-                        <img src="{{ asset('img/hero-home.png') }}" class="img-fluid rounded">
+                        <img src="{{ asset('build/images/hero-home.png') }}" class="img-fluid rounded">
                     </div>
                 </div>
             </div>
@@ -87,7 +87,7 @@
                         <div class="col-6 col-md-6">
                             <div class="feature">
                                 <div class="icon">
-                                    <img src="{{ asset('img/truck.svg') }}" alt="Image" class="imf-fluid">
+                                    <img src="{{ asset('build/images/truck.svg') }}" alt="Image" class="imf-fluid">
                                 </div>
                                 <h3>Fast &amp; Free Shipping</h3>
                                 <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
@@ -98,7 +98,7 @@
                         <div class="col-6 col-md-6">
                             <div class="feature">
                                 <div class="icon">
-                                    <img src="{{ asset('img/bag.svg') }}" alt="Image" class="imf-fluid">
+                                    <img src="{{ asset('build/images/bag.svg') }}" alt="Image" class="imf-fluid">
                                 </div>
                                 <h3>Easy to Shop</h3>
                                 <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
@@ -109,7 +109,7 @@
                         <div class="col-6 col-md-6">
                             <div class="feature">
                                 <div class="icon">
-                                    <img src="{{ asset('img/support.svg') }}" alt="Image" class="imf-fluid">
+                                    <img src="{{ asset('build/images/support.svg') }}" alt="Image" class="imf-fluid">
                                 </div>
                                 <h3>24/7 Support</h3>
                                 <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
@@ -120,7 +120,7 @@
                         <div class="col-6 col-md-6">
                             <div class="feature">
                                 <div class="icon">
-                                    <img src="{{ asset('img/return.svg') }}" alt="Image" class="imf-fluid">
+                                    <img src="{{ asset('build/images/return.svg') }}" alt="Image" class="imf-fluid">
                                 </div>
                                 <h3>Hassle Free Returns</h3>
                                 <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
@@ -202,7 +202,7 @@
 
                                             <div class="author-info">
                                                 <div class="author-pic">
-                                                    <img src="{{ asset('img/person-1.png') }}" alt="Maria Jones"
+                                                    <img src="{{ asset('build/images/person-1.png') }}" alt="Maria Jones"
                                                          class="img-fluid">
                                                 </div>
                                                 <h3 class="font-weight-bold">Maria Jones</h3>
@@ -226,14 +226,14 @@
         <div class="container relative">
 
             <div class="sofa-img">
-                <img src="{{ asset('img/hero-home.png') }}" alt="Image" class="rounded img-fluid">
+                <img src="{{ asset('build/images/hero-home.png') }}" alt="Image" class="rounded img-fluid">
             </div>
 
             <div class="row">
                 <div class="col-lg-8">
                     <div class="subscription-form">
                         <h3 class="d-flex align-items-center"><span class="me-1"><img
-                                    src="{{ asset('img/envelope-outline.svg') }}" alt="Image"
+                                    src="{{ asset('build/images/envelope-outline.svg') }}" alt="Image"
                                     class="img-fluid"></span><span>Subscribe to Newsletter</span></h3>
 
                         <form action="#" class="row g-3">
@@ -258,7 +258,7 @@
                 <div class="col-lg-4">
                     <div class="footer-logo-wrap">
                         <a href="#" class="footer-logo">
-                            <img src="{{ asset('img/logo.png') }}">
+                            <img src="{{ asset('build/images/logo.png') }}">
                         </a>
                     </div>
                 </div>
