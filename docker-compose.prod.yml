@@ -1,0 +1,26 @@
+services:
+
+  app:
+    environment:
+      - APP_ENV=prod
+      - APP_DEBUG=0
+      - TZ=Europe/Vienna
+      # - DATABASE_URL=${DATABASE_URL}
+    volumes: []
+
+  database:
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASS}
+
+  caddy:
+    ports:
+      - "80:80"
+      - "443:443"
+
+  messenger-consumer:
+    environment:
+      - TZ=Europe/Vienna
+    volumes: []

@@ -16,14 +16,13 @@ services:
     depends_on:
       - database
 
-  ###> doctrine/doctrine-bundle ###
   database:
     image: mariadb:${MARIADB_VERSION:-10.11}
     environment:
-      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASS:-dbrootpw}"
-      MARIADB_DATABASE: "${DB_NAME:-energyviz}"
-      MARIADB_USER: "${DB_USER:-dbuser}"
-      MARIADB_PASSWORD: "${DB_PASS:-dbpw}"
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASS}
     ports:
       - "3306:3306"
     healthcheck:
@@ -33,9 +32,6 @@ services:
       start_period: 30s
     volumes:
       - database_data:/var/lib/mysql:rw
-      # Optional bind mount for dev
-      # - ./docker/db/data:/var/lib/mysql:rw
-  ###< doctrine/doctrine-bundle ###
 
   caddy:
     image: caddy:2-alpine
