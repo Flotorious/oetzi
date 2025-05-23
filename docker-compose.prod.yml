@@ -2,8 +2,8 @@ services:
 
   app:
     environment:
-      - APP_ENV=prod
-      - APP_DEBUG=0
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
       - TZ=Europe/Vienna
       # - DATABASE_URL=${DATABASE_URL}
     volumes: []
@@ -16,6 +16,8 @@ services:
       MARIADB_PASSWORD: ${DB_PASS}
 
   caddy:
+    volumes:
+      - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile
     ports:
       - "80:80"
       - "443:443"

@@ -10,8 +10,8 @@ services:
       - ./docker/php/timezone.ini:/usr/local/etc/php/conf.d/timezone.ini:ro
     working_dir: /srv/app
     environment:
-      - APP_ENV=dev
-      - APP_DEBUG=1
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
       - TZ=Europe/Vienna
     depends_on:
       - database
@@ -37,10 +37,11 @@ services:
     image: caddy:2-alpine
     container_name: symfony-caddy
     ports:
-      - "8000:80"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./public:/srv/app/public
-      - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./.docker/caddy/Caddyfile.dev:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     depends_on:

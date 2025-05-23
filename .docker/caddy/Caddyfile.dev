@@ -1,0 +1,5 @@
+http://:80 {
+    root * /srv/app/public
+    php_fastcgi app:9000
+    file_server
+}
