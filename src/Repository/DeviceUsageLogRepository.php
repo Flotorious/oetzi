@@ -68,6 +68,37 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative();
     }
 
+    public function findLogsForUserAndDay(User $user, \DateTimeInterface $day): array
+    {
+        $start = (clone $day)->setTime(0, 0);
+        $end = (clone $day)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('log')
+            ->join('log.device', 'd')
+            ->where('d.user = :user')
+            ->andWhere('log.startedAt BETWEEN :start AND :end')
+            ->setParameter('user', $user)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findFirstLogDateForUser(User $user): ?\DateTimeImmutable
+    {
+        $log = $this->createQueryBuilder('log')
+            ->join('log.device', 'd')
+            ->where('d.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('log.startedAt', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $log?->getStartedAt();
+    }
+
+
     //    /**
     //     * @return DeviceUsageLog[] Returns an array of DeviceUsageLog objects
     //     */

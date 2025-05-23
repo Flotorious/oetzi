@@ -85,4 +85,14 @@ class UserEnergySnapshot
         $this->consumptionDelta = $value;
         return $this;
     }
+
+    public function calculateDelta(?float $previousTotal): void
+    {
+        if ($previousTotal !== null) {
+            $this->consumptionDelta = round($this->consumptionKwh - $previousTotal, 6);
+        } else {
+            $this->consumptionDelta = 0.0;
+        }
+    }
+
 }
