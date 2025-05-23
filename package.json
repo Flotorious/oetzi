@@ -1,4 +1,12 @@
 {
+    "private": true,
+    "license": "UNLICENSED",
+    "scripts": {
+        "dev-server": "encore dev-server",
+        "dev": "encore dev",
+        "watch": "encore dev --watch",
+        "build": "encore production --progress"
+    },
     "devDependencies": {
         "@babel/core": "^7.17.0",
         "@babel/preset-env": "^7.16.0",
@@ -11,21 +19,12 @@
         "webpack-cli": "^5.1.0",
         "webpack-notifier": "^1.15.0"
     },
-    "license": "UNLICENSED",
-    "private": true,
-    "scripts": {
-        "dev-server": "encore dev-server",
-        "dev": "encore dev",
-        "watch": "encore dev --watch",
-        "build": "encore production --progress"
-    },
     "dependencies": {
-        "@symfony/stimulus-bundle": "^2.24.0",
+        "@hotwired/stimulus": "^3.2.1",
         "@symfony/ux-chartjs": "^2.24.0",
         "@symfony/ux-turbo": "^2.24.0",
         "bootstrap": "^5.3.6",
         "chart.js": "^4.4.9",
-        "chartjs-plugin-zoom": "^2.2.0",
-        "tiny-slider": "^2.9.4"
+        "chartjs-plugin-zoom": "^2.2.0"
     }
 }
