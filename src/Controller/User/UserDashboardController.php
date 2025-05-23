@@ -36,10 +36,14 @@ class UserDashboardController extends AbstractDashboardController
     public function index(): Response
     {
         $user = $this->getUser();
-        $lastSnapshot = $this->userEnergySnapshotRepository->findOneBy(['user' => $user], ['timestamp' => 'DESC']);
+
+        $totalMonthlyConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumption($user);
+        $totalMonthlyCost = $this->userEnergySnapshotRepository->getTotalMonthlyCost($user);
+
         return $this->render('user/dashboard/index.html.twig', [
             'user' => $user,
-            'consumptionKwh' => $lastSnapshot?->getConsumptionKwh(),
+            'totalMonthlyConsumption' => $totalMonthlyConsumption,
+            'totalMonthlyCost' => $totalMonthlyCost
         ]);
     }
 
@@ -115,7 +119,7 @@ class UserDashboardController extends AbstractDashboardController
     public function dailyDeviceUsageGraph(): Response
     {
         $user = $this->getUser();
-        $day = new \DateTime('2025-05-21');
+        $day = new \DateTime('2025-05-20');
 
         $rawData = $this->deviceUsageLogRepository->getDeviceUsagePerIntervalForDay($user, $day);
         $priceRateBandsData = $this->priceRatePeriodRepository->getTimeBandsForChart();
@@ -148,7 +152,7 @@ class UserDashboardController extends AbstractDashboardController
                 'borderColor' => ColorHelper::generateColorFromString($deviceName, 1),
                 'backgroundColor' => ColorHelper::generateColorFromString($deviceName, 0.5),
                 'borderWidth' => 1.5,
-                'tension' => 0.1,
+                'tension' => 0.3,
             ];
         }
 

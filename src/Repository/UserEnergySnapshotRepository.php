@@ -167,6 +167,36 @@ class UserEnergySnapshotRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative();
     }
 
+    public function getTotalMonthlyCost(User $user): float
+    {
+        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
+        $end = new \DateTimeImmutable();
+
+        $monthlyCosts = $this->getMonthlyCostByPeriod($user, $start, $end);
+
+        $total = 0;
+        foreach ($monthlyCosts as $row) {
+            $total += (float) $row['cost'];
+        }
+
+        return round($total, 2);
+    }
+
+    public function getMonthlyConsumption(User $user): float
+    {
+        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
+        $end = new \DateTimeImmutable();
+
+        $qb = $this->createQueryBuilder('s')
+            ->select('SUM(s.consumptionDelta)')
+            ->where('s.user = :user')
+            ->andWhere('s.timestamp BETWEEN :start AND :end')
+            ->setParameter('user', $user)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end);
+
+        return (float) $qb->getQuery()->getSingleScalarResult();
+    }
 
 
     //    /**

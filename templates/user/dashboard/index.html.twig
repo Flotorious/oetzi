@@ -4,35 +4,13 @@
 {% endblock %}
 
 {% block content_top_header %}
-    <div class="bg-black text-white">
-        test
-    </div>
+    {{ include('user/partials/_content_top_header.html.twig') }}
     {{ parent() }}
 {% endblock %}
 
 {% block main %}
+    {{ dump() }}
     <div class="ea-content">
-        <section class="pb-3 pb-md-4 pb-xl-5">
-            <div class="row gy-3 gy-md-4">
-                <div class="col-12 col-lg-6 col-xl-7">
-                    <!-- Chart 1 - Bootstrap Brain Component -->
-                    <div class="card widget-card border-light shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <h5 class="card-title">Profile Details</h5>
-                            <ul class="list-group">
-                                <li class="list-group-item"><strong>MeterId:</strong> {{ user.userIdentifier }}</li>
-                                <li class="list-group-item">
-                                    <strong>Name:</strong> {{ user.firstName }} {{ user.lastName }}</li>
-                                <li class="list-group-item"><strong>Current consumption:</strong> {{ consumptionKwh }}
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
         <!-- Section - Bootstrap Brain Component -->
         <!-- Card 1 - Bootstrap Brain Component -->
         <section class="pb-3 pb-md-4 pb-xl-5">

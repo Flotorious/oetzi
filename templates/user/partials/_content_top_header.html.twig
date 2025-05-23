@@ -1,0 +1,39 @@
+<nav class="d-flex align-items-center" style="--bs-breadcrumb-divider: '|';" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><strong>Date:</strong> {{ "now"|date("Y-m-d H:i") }}</li>
+        <li class="breadcrumb-item"><strong>MeterID:</strong> {{ user.meterIdentifier }}</li>
+        <li class="breadcrumb-item"><strong>Name:</strong> {{ user.firstName }} {{ user.lastName }}</li>
+        <li class="breadcrumb-item">
+            <strong>
+                <span class="fas fa-info-circle"
+                      data-bs-toggle="tooltip"
+                      data-bs-html="true"
+                      title="
+                        <em>
+                            Consumption starting at the <u>beginning of the month</u> until today's date
+                            {{ "now"|date("Y-m-d") }}
+                        </em>
+                      "
+                ></span>
+                Current consumption:
+            </strong>
+            {{ totalMonthlyConsumption|format_number({ fraction_digit: 2 }) }} Kwh
+        </li>
+        <li class="breadcrumb-item">
+            <strong>
+                <span class="fas fa-info-circle"
+                      data-bs-toggle="tooltip"
+                      data-bs-html="true"
+                      title="
+                        <em>
+                            Consumption starting at the <u>beginning of the month</u> until today's date
+                            {{ "now"|date("Y-m-d") }}
+                        </em>
+                      "
+                ></span>
+                Running price:
+            </strong>
+            {{ totalMonthlyCost|format_currency('EUR') }}
+        </li>
+    </ol>
+</nav>
