@@ -136,6 +136,11 @@ class DeviceUsageLog
         return $this->title;
     }
 
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
+    }
+
     public function __toString(): string
     {
         if ($this->title) {
