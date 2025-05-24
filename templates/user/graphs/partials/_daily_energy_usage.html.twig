@@ -1,0 +1,8 @@
+<div data-controller="daily-energy-usage"
+     data-daily-energy-usage-chart-value="{{ chartDataEnergy|json_encode|e('html_attr') }}"
+     class="position-relative"
+>
+    <canvas data-daily-energy-usage-target="canvas" class="w-100"></canvas>
+</div>
+
+

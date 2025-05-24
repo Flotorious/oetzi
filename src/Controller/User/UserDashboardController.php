@@ -7,6 +7,7 @@ use App\Controller\Admin\UserCrudController;
 use App\Entity\Device;
 use App\Entity\DeviceUsageLog;
 use App\Entity\PriceRatePeriod;
+use App\Entity\User;
 use App\Entity\UserEnergySnapshot;
 use App\Repository\DeviceRepository;
 use App\Repository\DeviceUsageLogRepository;
@@ -28,6 +29,7 @@ class UserDashboardController extends AbstractDashboardController
     public function __construct(
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly DeviceUsageLogRepository $deviceUsageLogRepository,
+        private readonly DeviceRepository $deviceRepository,
         private readonly UserEnergySnapshotRepository $userEnergySnapshotRepository,
         private readonly PriceRatePeriodRepository $priceRatePeriodRepository,
     ) {}
@@ -37,13 +39,52 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
+        $today = new \DateTimeImmutable();
+        $startOfThisMonth = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
+        $lastMonthSameDay = $today->modify('-1 month');
+
+        $currentMonthConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumptionUntilDay($user, $today);
+        $lastMonthConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumptionUntilDay($user, $lastMonthSameDay);
+
+        if ($lastMonthConsumption === 0.0) {
+            $percentageChangeMonthlyConsumption = $currentMonthConsumption > 0 ? 100 : 0;
+        } else {
+            $percentageChangeMonthlyConsumption = (($currentMonthConsumption - $lastMonthConsumption) / $lastMonthConsumption) * 100;
+        }
+
+        // TODO use the getMonthlyConsumptionUntilDay instead
         $totalMonthlyConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumption($user);
+        $loggedMonthlyConsumption = $this->deviceUsageLogRepository->getLoggedMonthlyConsumption($user);
+
+        // TODO use the getTotalMonthlyCostUntil instead
         $totalMonthlyCost = $this->userEnergySnapshotRepository->getTotalMonthlyCost($user);
+        $currentMonthConst = $this->userEnergySnapshotRepository->getTotalMonthlyCostUntil($user, $today);
+        $lastMonthConst = $this->userEnergySnapshotRepository->getTotalMonthlyCostUntil($user, $lastMonthSameDay);
+        if ($lastMonthConst === 0.0) {
+            $changeMonthlyConst = $currentMonthConst > 0 ? 100 : 0;
+        } else {
+            $changeMonthlyConst = $currentMonthConst - $lastMonthConst;
+        }
+
+        $totalDevices = $this->deviceRepository->countAllDevices();
+
+        $dataPrice = $this->getMonthlyEnergyPriceGraphData($user, $startOfThisMonth, $today);
+        $dataDeviceConsumption = $this->getWeeklyDeviceUsageGraphData($user);
+        $dataEnergyConsumption = $this->getDailyEnergyUsageGraphData($user);
 
         return $this->render('user/dashboard/index.html.twig', [
             'user' => $user,
             'totalMonthlyConsumption' => $totalMonthlyConsumption,
-            'totalMonthlyCost' => $totalMonthlyCost
+            'loggedMonthlyConsumption' => $loggedMonthlyConsumption,
+            'currentMonthConst' => $currentMonthConst,
+            'totalDevices' => $totalDevices,
+            'currentMonthConsumption' => $currentMonthConsumption,
+            'lastMonthConsumption' => $lastMonthConsumption,
+            'percentageChangeMonthlyConsumption'=> sprintf('%+.2f%%', $percentageChangeMonthlyConsumption),
+            'changeMonthlyConst'=> $changeMonthlyConst,
+            'chartDataPrice'=> $dataPrice,
+            'chartDataEnergy'=> $dataEnergyConsumption,
+            'chartData'=> $dataDeviceConsumption,
         ]);
     }
 
@@ -52,22 +93,29 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        // Fetch raw data
+        $data = $this->getWeeklyDeviceUsageGraphData($user);
+
+        return $this->render('user/graphs/weekly_device_usage.html.twig', [
+            'chartData' => $data
+        ]);
+    }
+
+    public function getWeeklyDeviceUsageGraphData(User $user): array {
+            // Fetch raw data
         $deviceData = $this->deviceUsageLogRepository->getDailyDeviceEnergySummary($user);
-        $lastSnapshot = $this->userEnergySnapshotRepository->findOneBy(['user' => $user], ['timestamp' => 'DESC']);
         $unregisteredData = $this->userEnergySnapshotRepository->getUnregisteredConsumptionPerDay($user);
 
         $labels = array_unique(array_column($deviceData, 'date'));
         sort($labels);
 
-        // Organize device data
+            // Organize device data
         $byDeviceDate = [];
         $deviceIdMap = [];
         $differenceByDate = [];
 
         foreach ($deviceData as $row) {
-            $byDeviceDate[$row['device']][$row['date']] = round($row['energy'], 2);
-            $deviceIdMap[$row['device']] = $row['deviceId'];
+        $byDeviceDate[$row['device']][$row['date']] = round($row['energy'], 2);
+        $deviceIdMap[$row['device']] = $row['deviceId'];
         }
 
         // Prepare chart datasets for devices
@@ -104,15 +152,10 @@ class UserDashboardController extends AbstractDashboardController
             'stack' => 'energy',
         ];
 
-        return $this->render('user/graphs/weekly_device_usage.html.twig', [
-            'user' => $user,
-            'consumptionKwh' => $lastSnapshot?->getConsumptionKwh(),
-            'dailyEnergySummary' => $deviceData,
-            'chartData' => [
-                'labels' => $labels,
-                'datasets' => $datasets,
-            ]
-        ]);
+        return [
+            'labels'   => $labels,
+            'datasets' => $datasets
+        ];
     }
 
     #[Route('/daily-device-usage-graph', name: 'graph_daily_device_usage')]
@@ -165,37 +208,46 @@ class UserDashboardController extends AbstractDashboardController
         ]);
     }
 
+    public function getDailyEnergyUsageGraphData(User $user): array {
+        {
+            $day = new \DateTime('2025-05-20');
+
+            //$day = new \DateTime('today');
+            $rawData = $this->userEnergySnapshotRepository->getEnergyUsagePerDay($user, $day);
+
+            $labels = [];
+            $data = [];
+
+            foreach ($rawData as $snapshot) {
+                $labels[] = $snapshot->getTimestamp()->format('H:i');
+                $data[] = $snapshot->getConsumptionDelta();
+            }
+
+            $datasets = [[
+                'label' => 'Consumption Δ (kWh)',
+                'data' => $data,
+                'borderColor' => 'rgba(75, 192, 192, 1)',
+                'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                'fill' => true,
+                'tension' => 0.3,
+            ]];
+
+            return [
+                'labels'   => $labels,
+                'datasets' => $datasets
+            ];
+        }
+    }
+
     #[Route('/daily-energy-usage-graph', name: 'graph_daily_energy_usage')]
     public function dailyEnergyUsageGraph(): Response
     {
         $user = $this->getUser();
-        $day = new \DateTime('2025-05-20');
 
-        //$day = new \DateTime('today');
-        $rawData = $this->userEnergySnapshotRepository->getEnergyUsagePerDay($user, $day);
-
-        $labels = [];
-        $data = [];
-
-        foreach ($rawData as $snapshot) {
-            $labels[] = $snapshot->getTimestamp()->format('H:i');
-            $data[] = $snapshot->getConsumptionDelta();
-        }
-
-        $datasets = [[
-            'label' => 'Consumption Δ (kWh)',
-            'data' => $data,
-            'borderColor' => 'rgba(75, 192, 192, 1)',
-            'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
-            'fill' => true,
-            'tension' => 0.3,
-        ]];
+        $data = $this->getDailyEnergyUsageGraphData($user);
 
         return $this->render('user/graphs/daily_energy_usage.html.twig', [
-            'chartData' => [
-                'labels' => $labels,
-                'datasets' => $datasets,
-            ],
+            'chartDataEnergy' => $data
         ]);
     }
 
@@ -300,6 +352,15 @@ class UserDashboardController extends AbstractDashboardController
         $startDate = new \DateTimeImmutable('2025-01-21 00:00:00');
         $endDate   = new \DateTimeImmutable('2025-05-30 23:59:59');
 
+        $data = $this->getMonthlyEnergyPriceGraphData($user, $startDate, $endDate);
+
+        return $this->render('user/graphs/weekly_energy_price.html.twig', [
+            'chartData' => $data
+        ]);
+    }
+
+    public function getMonthlyEnergyPriceGraphData(User $user, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
         $raw = $this->userEnergySnapshotRepository
             ->getMonthlyCostByPeriod($user, $startDate, $endDate);
 
@@ -330,17 +391,15 @@ class UserDashboardController extends AbstractDashboardController
             ];
         }
 
-        return $this->render('user/graphs/weekly_energy_price.html.twig', [
-            'chartData' => [
-                'labels'   => $months,
-                'datasets' => $datasets,
-            ],
-        ]);
+        return [
+            'labels'   => $months,
+            'datasets' => $datasets
+        ];
     }
 
     public function configureDashboard(): Dashboard
     {
-        return Dashboard::new()->setTitle('User Dashboard');
+        return Dashboard::new()->setTitle('User Dashboard')->disableDarkMode();
     }
 
     public function configureMenuItems(): iterable

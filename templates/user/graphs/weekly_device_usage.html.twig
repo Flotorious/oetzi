@@ -6,12 +6,7 @@
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
-            <div data-controller="weekly-device-usage"
-                 data-weekly-device-usage-chart-value="{{ chartData|json_encode|e('html_attr') }}"
-                 class="position-relative"
-            >
-                <canvas data-weekly-device-usage-target="canvas" class="w-100" ></canvas>
-            </div>
+            {{ include('user/graphs/partials/_weekly_device_usage.html.twig') }}
         </div>
     </div>
 {% endblock %}

@@ -41,6 +41,34 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative();
     }
 
+    // TODO check if result is correct
+    public function getLoggedMonthlyConsumption(User $user): float
+    {
+        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
+        $end = $start->modify('first day of next month');
+
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "
+        SELECT SUM(dul.energy_used_kwh) AS total_energy
+        FROM device_usage_log dul
+        JOIN device d ON d.id = dul.device_id
+        WHERE d.user_id = :user
+          AND dul.started_at >= :start
+          AND dul.started_at < :end
+    ";
+
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery([
+            'user' => $user->getId(),
+            'start' => $start->format('Y-m-d H:i:s'),
+            'end' => $end->format('Y-m-d H:i:s'),
+        ]);
+
+        return (float) ($result->fetchOne() ?? 0);
+    }
+
+
     public function getDeviceUsagePerIntervalForDay(User $user, \DateTime $day): array
     {
         $conn = $this->getEntityManager()->getConnection();

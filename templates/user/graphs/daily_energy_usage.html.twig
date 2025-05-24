@@ -6,13 +6,8 @@
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
-            <div data-controller="daily-energy-usage"
-                 data-daily-energy-usage-chart-value="{{ chartData|json_encode|e('html_attr') }}"
-                 class="position-relative"
-            >
-                <canvas data-daily-energy-usage-target="canvas" class="w-100" ></canvas>
-                <button type="button" data-action="click->daily-energy-usage#resetZoom">Reset Zoom</button>
-            </div>
+            {{ include('user/graphs/partials/_daily_energy_usage.html.twig') }}
+            <button type="button" data-action="click->daily-energy-usage#resetZoom">Reset Zoom</button>
         </div>
     </div>
 {% endblock %}
