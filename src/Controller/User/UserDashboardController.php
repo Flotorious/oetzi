@@ -2,18 +2,15 @@
 
 namespace App\Controller\User;
 
-use App\Controller\Admin\PriceRatePeriodCrudController;
 use App\Controller\Admin\UserCrudController;
 use App\Entity\Device;
 use App\Entity\DeviceUsageLog;
 use App\Entity\PriceRatePeriod;
-use App\Entity\User;
 use App\Entity\UserEnergySnapshot;
 use App\Repository\DeviceRepository;
 use App\Repository\DeviceUsageLogRepository;
-use App\Repository\PriceRatePeriodRepository;
 use App\Repository\UserEnergySnapshotRepository;
-use App\Utils\ColorHelper;
+use App\Service\UserDashboardDataService;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -21,7 +18,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 
 #[AdminDashboard(routePath: '/profile', routeName: 'app_user_dashboard')]
 class UserDashboardController extends AbstractDashboardController
@@ -31,8 +27,9 @@ class UserDashboardController extends AbstractDashboardController
         private readonly DeviceUsageLogRepository $deviceUsageLogRepository,
         private readonly DeviceRepository $deviceRepository,
         private readonly UserEnergySnapshotRepository $userEnergySnapshotRepository,
-        private readonly PriceRatePeriodRepository $priceRatePeriodRepository,
+        private readonly UserDashboardDataService $dashboardData
     ) {}
+
 
     #[Route('/', name: 'user_dashboard_index')]
     public function index(): Response
@@ -68,9 +65,9 @@ class UserDashboardController extends AbstractDashboardController
 
         $totalDevices = $this->deviceRepository->countAllDevices();
 
-        $dataPrice = $this->getMonthlyEnergyPriceGraphData($user, $startOfThisMonth, $today);
-        $dataDeviceConsumption = $this->getWeeklyDeviceUsageGraphData($user);
-        $dataEnergyConsumption = $this->getDailyEnergyUsageGraphData($user);
+        $dataPrice = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startOfThisMonth, $today,'month');
+        $dataDeviceConsumption = $this->dashboardData->getWeeklyDeviceUsageGraphData($user);
+        $dataEnergyConsumption = $this->dashboardData->getDailyEnergyUsageGraphData($user,$lastMonthSameDay);
 
         return $this->render('user/dashboard/index.html.twig', [
             'user' => $user,
@@ -93,150 +90,25 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $data = $this->getWeeklyDeviceUsageGraphData($user);
+        $data = $this->dashboardData->getWeeklyDeviceUsageGraphData($user);
 
         return $this->render('user/graphs/weekly_device_usage.html.twig', [
             'chartData' => $data
         ]);
     }
 
-    public function getWeeklyDeviceUsageGraphData(User $user): array {
-            // Fetch raw data
-        $deviceData = $this->deviceUsageLogRepository->getDailyDeviceEnergySummary($user);
-        $unregisteredData = $this->userEnergySnapshotRepository->getUnregisteredConsumptionPerDay($user);
-
-        $labels = array_unique(array_column($deviceData, 'date'));
-        sort($labels);
-
-            // Organize device data
-        $byDeviceDate = [];
-        $deviceIdMap = [];
-        $differenceByDate = [];
-
-        foreach ($deviceData as $row) {
-        $byDeviceDate[$row['device']][$row['date']] = round($row['energy'], 2);
-        $deviceIdMap[$row['device']] = $row['deviceId'];
-        }
-
-        // Prepare chart datasets for devices
-        $datasets = [];
-        foreach ($deviceIdMap as $deviceName => $deviceId) {
-            $color = ColorHelper::generateColorFromString($deviceName, 0.6);
-            $values = array_map(fn($label) => $byDeviceDate[$deviceName][$label] ?? 0, $labels);
-
-            $datasets[] = [
-                'label' => $deviceName,
-                'data' => $values,
-                'stack' => 'energy',
-                'deviceId' => $deviceId,
-                'backgroundColor' => $color,
-                'borderColor' => ColorHelper::generateColorFromString($deviceName, 1),
-                'borderWidth' => 1.5,
-            ];
-        }
-
-        foreach ($differenceByDate as $row) {
-            $differenceByDate[$row['date']] = round($row['difference'], 2);
-        }
-
-        $unregisteredByDate = [];
-        foreach ($unregisteredData as $row) {
-            $unregisteredByDate[$row['date']] = max(round($row['difference'], 2), 0); // ensure >= 0
-        }
-
-        $unregisteredValues = array_map(fn($label) => $unregisteredByDate[$label] ?? 0, $labels);
-
-        $datasets[] = [
-            'label' => 'Unregistered Consumption',
-            'data' => $unregisteredValues,
-            'stack' => 'energy',
-        ];
-
-        return [
-            'labels'   => $labels,
-            'datasets' => $datasets
-        ];
-    }
-
     #[Route('/daily-device-usage-graph', name: 'graph_daily_device_usage')]
     public function dailyDeviceUsageGraph(): Response
     {
         $user = $this->getUser();
+
         $day = new \DateTime('2025-05-20');
 
-        $rawData = $this->deviceUsageLogRepository->getDeviceUsagePerIntervalForDay($user, $day);
-        $priceRateBandsData = $this->priceRatePeriodRepository->getTimeBandsForChart();
-
-        $priceRateBands = array_map(function ($band) {
-            return [
-                'start' => $band['start']->format('H:i'),
-                'end' => $band['end']->format('H:i'),
-                'color' => ColorHelper::generateColorFromString('Band-' . $band['start']->format('H:i'), 0.1),
-            ];
-        }, $priceRateBandsData);
-
-        $labels = array_column($rawData, 'time_slot');
-        $labels = array_unique($labels);
-        sort($labels); // Optional: ensures correct chronological order
-
-        $byDevice = [];
-        foreach ($rawData as $row) {
-            $byDevice[$row['device']][$row['time_slot']] = (float) $row['energy'];
-        }
-
-        $datasets = [];
-        foreach ($byDevice as $deviceName => $valuesByTime) {
-            $values = array_map(fn($label) => $valuesByTime[$label] ?? 0, $labels);
-
-            $datasets[] = [
-                'label' => $deviceName,
-                'data' => $values,
-                'fill' => false,
-                'borderColor' => ColorHelper::generateColorFromString($deviceName, 1),
-                'backgroundColor' => ColorHelper::generateColorFromString($deviceName, 0.5),
-                'borderWidth' => 1.5,
-                'tension' => 0.3,
-            ];
-        }
+        $data = $this->dashboardData->getDailyDeviceUsageGraphData($user, $day);
 
         return $this->render('user/graphs/daily_device_usage.html.twig', [
-            'chartData' => [
-                'labels' => $labels,
-                'datasets' => $datasets,
-                'priceRateBands' => $priceRateBands,
-            ],
+            'chartData' => $data
         ]);
-    }
-
-    public function getDailyEnergyUsageGraphData(User $user): array {
-        {
-            $day = new \DateTime('2025-05-20');
-
-            //$day = new \DateTime('today');
-            $rawData = $this->userEnergySnapshotRepository->getEnergyUsagePerDay($user, $day);
-
-            $labels = [];
-            $data = [];
-
-            foreach ($rawData as $snapshot) {
-                $labels[] = $snapshot->getTimestamp()->format('H:i');
-                $data[] = $snapshot->getConsumptionDelta();
-            }
-
-            $datasets = [[
-                'label' => 'Consumption Δ (kWh)',
-                'data' => $data,
-                'borderColor' => 'rgba(75, 192, 192, 1)',
-                'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
-                'fill' => true,
-                'tension' => 0.3,
-            ]];
-
-            return [
-                'labels'   => $labels,
-                'datasets' => $datasets
-            ];
-        }
     }
 
     #[Route('/daily-energy-usage-graph', name: 'graph_daily_energy_usage')]
@@ -244,7 +116,9 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $data = $this->getDailyEnergyUsageGraphData($user);
+        $day = new \DateTime('2024-12-20');
+
+        $data = $this->dashboardData->getDailyEnergyUsageGraphData($user, $day);
 
         return $this->render('user/graphs/daily_energy_usage.html.twig', [
             'chartDataEnergy' => $data
@@ -256,45 +130,13 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $start = new \DateTimeImmutable('2025-01-01');
-        $end = new \DateTimeImmutable('2025-05-31 23:59:59');
+        $startDate = new \DateTimeImmutable('2024-03-01');
+        $endDate = new \DateTimeImmutable('2025-05-31 23:59:59');
 
-        $rawData = $this->userEnergySnapshotRepository->getMonthlyEnergyUsage($user, $start, $end);
-
-        $months = [];
-        $totals = [];
-
-        $period = new \DatePeriod(
-            $start->modify('first day of this month'),
-            new \DateInterval('P1M'),
-            $end->modify('first day of next month')
-        );
-
-        foreach ($period as $month) {
-            $key = $month->format('Y-m');
-            $months[] = $key;
-            $totals[$key] = 0;
-        }
-
-        foreach ($rawData as $row) {
-            $totals[$row['month']] = round((float)$row['total'], 2);
-        }
-
-        $data = array_values($totals);
-
-        $datasets = [[
-            'label' => 'Monthly Consumption (kWh)',
-            'data' => $data,
-            'backgroundColor' => 'rgba(54, 162, 235, 0.6)',
-            'borderColor' => 'rgba(54, 162, 235, 1)',
-            'borderWidth' => 1,
-        ]];
+        $data = $this->dashboardData->getMonthlyEnergyUsageGraphData($user, $startDate, $endDate);
 
         return $this->render('user/graphs/monthly_energy_usage.html.twig', [
-            'chartData' => [
-                'labels' => $months,
-                'datasets' => $datasets,
-            ],
+            'chartData' => $data
         ]);
     }
 
@@ -302,45 +144,13 @@ class UserDashboardController extends AbstractDashboardController
     public function weeklyEnergyPriceGraph(): Response
     {
         $user = $this->getUser();
-
         $startDate = new \DateTimeImmutable('2025-01-21 00:00:00');
         $endDate   = new \DateTimeImmutable('2025-05-30 23:59:59');
 
-        $raw = $this->userEnergySnapshotRepository
-            ->getWeeklyCostByPeriod($user, $startDate, $endDate);
-
-        $weeks = array_unique(array_column($raw, 'week_start'));
-        sort($weeks);
-
-        $periods = array_unique(array_column($raw, 'period'));
-
-        $costBy = [];
-        foreach ($raw as $row) {
-            $costBy[$row['period']][$row['week_start']] = round((float)$row['cost'], 2);
-        }
-
-        $datasets = [];
-        foreach ($periods as $periodName) {
-            $data = array_map(
-                fn($wk) => $costBy[$periodName][$wk] ?? 0,
-                $weeks
-            );
-
-            $datasets[] = [
-                'label'           => $periodName,
-                'data'            => $data,
-                'stack'           => 'price',
-                'backgroundColor' => ColorHelper::generateColorFromString($periodName, 0.6),
-                'borderColor'     => ColorHelper::generateColorFromString($periodName, 1),
-                'borderWidth'     => 1,
-            ];
-        }
+        $data = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startDate, $endDate, 'week');
 
         return $this->render('user/graphs/weekly_energy_price.html.twig', [
-            'chartData' => [
-                'labels'   => $weeks,
-                'datasets' => $datasets,
-            ],
+            'chartData' => $data,
         ]);
     }
 
@@ -348,53 +158,14 @@ class UserDashboardController extends AbstractDashboardController
     public function monthlyEnergyPriceGraph(): Response
     {
         $user = $this->getUser();
-
         $startDate = new \DateTimeImmutable('2025-01-21 00:00:00');
         $endDate   = new \DateTimeImmutable('2025-05-30 23:59:59');
 
-        $data = $this->getMonthlyEnergyPriceGraphData($user, $startDate, $endDate);
+        $data = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startDate, $endDate, 'month');
 
         return $this->render('user/graphs/weekly_energy_price.html.twig', [
-            'chartData' => $data
+            'chartData' => $data,
         ]);
-    }
-
-    public function getMonthlyEnergyPriceGraphData(User $user, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
-    {
-        $raw = $this->userEnergySnapshotRepository
-            ->getMonthlyCostByPeriod($user, $startDate, $endDate);
-
-        $months = array_unique(array_column($raw, 'month'));
-        sort($months);
-
-        $periods = array_unique(array_column($raw, 'period'));
-
-        $costBy = [];
-        foreach ($raw as $row) {
-            $costBy[$row['period']][$row['month']] = round((float)$row['cost'], 2);
-        }
-
-        $datasets = [];
-        foreach ($periods as $periodName) {
-            $data = array_map(
-                fn($month) => $costBy[$periodName][$month] ?? 0,
-                $months
-            );
-
-            $datasets[] = [
-                'label'           => $periodName,
-                'data'            => $data,
-                'stack'           => 'price',
-                'backgroundColor' => ColorHelper::generateColorFromString($periodName, 0.6),
-                'borderColor'     => ColorHelper::generateColorFromString($periodName, 1),
-                'borderWidth'     => 1,
-            ];
-        }
-
-        return [
-            'labels'   => $months,
-            'datasets' => $datasets
-        ];
     }
 
     public function configureDashboard(): Dashboard
