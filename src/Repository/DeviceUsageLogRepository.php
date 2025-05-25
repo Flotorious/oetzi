@@ -21,6 +21,9 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
     {
         $conn = $this->getEntityManager()->getConnection();
 
+        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
+        $end = $start->modify('first day of next month');
+
         $sql = "
             SELECT
               DATE(dul.started_at) AS date,
@@ -30,13 +33,18 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
             FROM device_usage_log dul
             JOIN device d ON d.id = dul.device_id
             WHERE d.user_id = :user
-             -- AND dul.started_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+                AND dul.started_at >= :start
+                AND dul.started_at < :end
             GROUP BY DATE(dul.started_at), d.id, d.name
             ORDER BY date ASC
         ";
 
         $stmt = $conn->prepare($sql);
-        $result = $stmt->executeQuery(['user' => $user->getId()]);
+        $result = $stmt->executeQuery([
+            'user' => $user->getId(),
+            'start' => $start->format('Y-m-d H:i:s'),
+            'end' => $end->format('Y-m-d H:i:s'),
+        ]);
 
         return $result->fetchAllAssociative();
     }
@@ -50,13 +58,13 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = "
-        SELECT SUM(dul.energy_used_kwh) AS total_energy
-        FROM device_usage_log dul
-        JOIN device d ON d.id = dul.device_id
-        WHERE d.user_id = :user
-          AND dul.started_at >= :start
-          AND dul.started_at < :end
-    ";
+            SELECT SUM(dul.energy_used_kwh) AS total_energy
+            FROM device_usage_log dul
+            JOIN device d ON d.id = dul.device_id
+            WHERE d.user_id = :user
+              AND dul.started_at >= :start
+              AND dul.started_at < :end
+        ";
 
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([
