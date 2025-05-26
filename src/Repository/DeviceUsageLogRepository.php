@@ -17,12 +17,9 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
         parent::__construct($registry, DeviceUsageLog::class);
     }
 
-    public function getDailyDeviceEnergySummary(User $user): array
+    public function getDailyDeviceEnergySummary(User $user,\DateTimeImmutable $start, \DateTimeImmutable $end): array
     {
         $conn = $this->getEntityManager()->getConnection();
-
-        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
-        $end = $start->modify('first day of next month');
 
         $sql = "
             SELECT
@@ -77,7 +74,7 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
     }
 
 
-    public function getDeviceUsagePerIntervalForDay(User $user, \DateTime $day): array
+    public function getDeviceUsagePerIntervalForDay(User $user, \DateTimeInterface $day): array
     {
         $conn = $this->getEntityManager()->getConnection();
 

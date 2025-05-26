@@ -3,26 +3,46 @@ import Chart from 'chart.js/auto';
 
 export default class extends Controller {
     static targets = ['canvas'];
-    static values  = { chart: Object };
+    static values = {
+        chart: Object,
+        periodType: String
+    };
 
     connect() {
-        const ctx = this.canvasTarget.getContext('2d');
-        this.chart = new Chart(ctx, {
+        this.renderChart(this.chartValue);
+        document.getElementById('filter-btn').addEventListener('click', () => this.onFilter());
+    }
+
+    async onFilter() {
+        const start = document.getElementById('start-date').value;
+        const end = document.getElementById('end-date').value;
+        const period = this.hasPeriodTypeValue ? this.periodTypeValue : 'month';
+
+        const params = new URLSearchParams({
+            start, end, periodType: period
+        });
+        const response = await fetch(`/ajax/period-energy-price?${params.toString()}`);
+        const data = await response.json();
+
+        this.renderChart(data);
+    }
+
+    renderChart(chartData) {
+        if (this.chart) {
+            this.chart.destroy();
+        }
+        this.chart = new Chart(this.canvasTarget.getContext('2d'), {
             type: 'bar',
-            data: this.chartValue,
+            data: chartData,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     tooltip: { mode: 'index', intersect: false },
-                    title: {
-                        display: true,
-                        text: 'Weekly energy price',
-                    }
                 },
                 scales: {
                     x: {
                         stacked: true,
-                        title: { display: true, text: 'Date' }
                     },
                     y: {
                         stacked: true,

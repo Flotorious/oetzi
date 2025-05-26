@@ -65,9 +65,12 @@ class UserDashboardController extends AbstractDashboardController
 
         $totalDevices = $this->deviceRepository->countAllDevices();
 
+        $startDate = (new \DateTimeImmutable('-6 days'))->setTime(0, 0, 0);
+        $endDate = new \DateTimeImmutable();
+
         $dataPrice = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startOfThisMonth, $today,'month');
-        $dataDeviceConsumption = $this->dashboardData->getWeeklyDeviceUsageGraphData($user);
-        $dataEnergyConsumption = $this->dashboardData->getDailyEnergyUsageGraphData($user,$lastMonthSameDay);
+        $dataDeviceConsumption = $this->dashboardData->getWeeklyDeviceUsageGraphData($user,$startDate,$endDate);
+        $dataEnergyConsumption = $this->dashboardData->getDailyEnergyUsageGraphData($user,$today);
 
         return $this->render('user/dashboard/index.html.twig', [
             'user' => $user,
@@ -90,7 +93,10 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $data = $this->dashboardData->getWeeklyDeviceUsageGraphData($user);
+        $startDate = (new \DateTimeImmutable('-6 days'))->setTime(0, 0, 0);
+        $endDate = new \DateTimeImmutable();
+
+        $data = $this->dashboardData->getWeeklyDeviceUsageGraphData($user,$startDate,$endDate);
 
         return $this->render('user/graphs/weekly_device_usage.html.twig', [
             'chartData' => $data
@@ -102,12 +108,12 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $day = new \DateTime('2025-05-20');
+        $day = new \DateTimeImmutable('2025-05-20');
 
         $data = $this->dashboardData->getDailyDeviceUsageGraphData($user, $day);
 
         return $this->render('user/graphs/daily_device_usage.html.twig', [
-            'chartData' => $data
+            'chartData' => $data,
         ]);
     }
 
@@ -116,7 +122,7 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $day = new \DateTime('2024-12-20');
+        $day = new \DateTimeImmutable('now');
 
         $data = $this->dashboardData->getDailyEnergyUsageGraphData($user, $day);
 
@@ -130,13 +136,15 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $startDate = new \DateTimeImmutable('2024-03-01');
-        $endDate = new \DateTimeImmutable('2025-05-31 23:59:59');
+        $endDate = new \DateTimeImmutable('now');
+        $startDate = (new \DateTimeImmutable('now'))->modify('-6 months')->modify('first day of this month');
 
         $data = $this->dashboardData->getMonthlyEnergyUsageGraphData($user, $startDate, $endDate);
 
         return $this->render('user/graphs/monthly_energy_usage.html.twig', [
-            'chartData' => $data
+            'chartData' => $data,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
         ]);
     }
 
@@ -144,13 +152,17 @@ class UserDashboardController extends AbstractDashboardController
     public function weeklyEnergyPriceGraph(): Response
     {
         $user = $this->getUser();
-        $startDate = new \DateTimeImmutable('2025-01-21 00:00:00');
-        $endDate   = new \DateTimeImmutable('2025-05-30 23:59:59');
+
+        $endDate = new \DateTimeImmutable('today 23:59:59');
+        $startDate = $endDate->modify('-3 weeks')->modify('monday this week')->setTime(0, 0, 0);
 
         $data = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startDate, $endDate, 'week');
 
         return $this->render('user/graphs/weekly_energy_price.html.twig', [
             'chartData' => $data,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'periodType' => 'week',
         ]);
     }
 
@@ -158,13 +170,17 @@ class UserDashboardController extends AbstractDashboardController
     public function monthlyEnergyPriceGraph(): Response
     {
         $user = $this->getUser();
-        $startDate = new \DateTimeImmutable('2025-01-21 00:00:00');
-        $endDate   = new \DateTimeImmutable('2025-05-30 23:59:59');
+
+        $endDate = new \DateTimeImmutable('today 23:59:59');
+        $startDate = $endDate->modify('-5 months')->modify('first day of this month')->setTime(0, 0, 0);
 
         $data = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startDate, $endDate, 'month');
 
         return $this->render('user/graphs/weekly_energy_price.html.twig', [
             'chartData' => $data,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'periodType' => 'month'
         ]);
     }
 

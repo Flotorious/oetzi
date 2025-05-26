@@ -6,6 +6,11 @@
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
+            <div class="mb-3 d-flex align-items-center gap-2">
+                <label for="daily-usage-date" class="me-2">Day:</label>
+                <input type="date" id="daily-usage-date"
+                       value="{{ day is defined ? day|date('Y-m-d') : 'now'|date('Y-m-d') }}">
+            </div>
             {{ include('user/graphs/partials/_daily_energy_usage.html.twig') }}
             <button type="button" data-action="click->daily-energy-usage#resetZoom">Reset Zoom</button>
         </div>

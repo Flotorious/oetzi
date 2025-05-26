@@ -93,11 +93,21 @@
                                 <div class="mb-3 mb-sm-0">
                                     <h5 class="card-title widget-card-title">Consumption Overview</h5>
                                 </div>
+
+                                {% set today = "now"|date("Y-m-d") %}
+                                {% set days = [] %}
+                                {% for i in 0..6 %}
+                                    {% set day = (date(today)|date_modify("-" ~ i ~ " day")).format("Y-m-d") %}
+                                    {% set days = days|merge([day]) %}
+                                {% endfor %}
+
                                 <div>
-                                    <select class="form-select text-secondary border-light-subtle">
-                                        <option value="1">March 2025</option>
-                                        <option value="2">April 2025</option>
-                                        <option value="3">May 2025</option>
+                                    <select id="daily-usage-date" class="form-select text-secondary border-light-subtle">
+                                        {% for day in days %}
+                                            <option value="{{ day }}" {% if day == today %}selected{% endif %}>
+                                                {{ day|date("l, d M Y") }}
+                                            </option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>
@@ -115,12 +125,21 @@
                                 <div class="mb-3 mb-sm-0">
                                     <h5 class="card-title widget-card-title">Price night day</h5>
                                 </div>
+
+                                {% set now = "now"|date("Y-m") %}
+                                {% set months = [] %}
+                                {% for i in 0..6 %}
+                                    {% set month = (date(now ~ "-01")|date_modify("-" ~ i ~ " month")).format("Y-m") %}
+                                    {% set months = months|merge([month]) %}
+                                {% endfor %}
+
                                 <div>
-                                    <select class="form-select text-secondary border-light-subtle">
-                                        <option value="1">March 2023</option>
-                                        <option value="2">April 2023</option>
-                                        <option value="3">May 2023</option>
-                                        <option value="4">June 2023</option>
+                                    <select id="piechart-month" class="form-select text-secondary border-light-subtle">
+                                        {% for month in months %}
+                                            <option value="{{ month }}" {% if month == now %}selected{% endif %}>
+                                                {{ month|date("F Y") }}
+                                            </option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>
@@ -138,13 +157,14 @@
                                 <div class="mb-3 mb-sm-0">
                                     <h5 class="card-title widget-card-title">Logged Devices</h5>
                                 </div>
-                                <div>
-                                    <select class="form-select text-secondary border-light-subtle">
-                                        <option value="1">March 2023</option>
-                                        <option value="2">April 2023</option>
-                                        <option value="3">May 2023</option>
-                                        <option value="4">June 2023</option>
-                                    </select>
+                                <div class="d-flex align-items-center gap-2">
+                                    <label for="from-date" class="me-2">From:</label>
+                                    <input type="date" id="from-date"
+                                           value="{{ fromDate is defined ? fromDate|date('Y-m-d') : '2025-01-21' }}">
+                                    <label for="to-date" class="mx-2">To:</label>
+                                    <input type="date" id="to-date"
+                                           value="{{ toDate is defined ? toDate|date('Y-m-d') : '2025-05-30' }}">
+                                    <button id="device-usage-filter-btn" class="btn btn-primary btn-sm">Show</button>
                                 </div>
                             </div>
                             <div id="bsb-chart-4">

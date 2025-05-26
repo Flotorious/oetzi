@@ -6,11 +6,16 @@
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
+            <div class="mb-3 d-flex align-items-center gap-2">
+                <label for="device-usage-date" class="me-2">Day:</label>
+                <input type="date" id="device-usage-date"
+                       value="{{ day is defined ? day|date('Y-m-d') : 'now'|date('Y-m-d') }}">
+            </div>
             <div data-controller="daily-device-usage"
                  data-daily-device-usage-chart-value="{{ chartData|json_encode|e('html_attr') }}"
                  class="position-relative"
             >
-                <canvas data-daily-device-usage-target="canvas" class="w-100" ></canvas>
+                <canvas data-daily-device-usage-target="canvas" class="w-100"></canvas>
             </div>
         </div>
     </div>

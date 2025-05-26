@@ -6,6 +6,15 @@
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
+            <div class="mb-3 d-flex align-items-center gap-2">
+                <label for="from-date" class="me-2">From:</label>
+                <input type="date" id="from-date"
+                       value="{{ fromDate is defined ? fromDate|date('Y-m-d') : '2025-01-21' }}">
+                <label for="to-date" class="mx-2">To:</label>
+                <input type="date" id="to-date"
+                       value="{{ toDate is defined ? toDate|date('Y-m-d') : '2025-05-30' }}">
+                <button id="device-usage-filter-btn" class="btn btn-primary btn-sm">Show</button>
+            </div>
             {{ include('user/graphs/partials/_weekly_device_usage.html.twig') }}
         </div>
     </div>

@@ -6,11 +6,22 @@
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
+            <div class="mb-3 d-flex align-items-center gap-2">
+                <label for="start-date" class="me-2">From:</label>
+                <input type="date" id="start-date"
+                       value="{{ startDate is defined ? startDate|date('Y-m-d') : '2025-01-21' }}">
+                <label for="end-date" class="mx-2">To:</label>
+                <input type="date" id="end-date"
+                       value="{{ endDate is defined ? endDate|date('Y-m-d') : '2025-05-30' }}">
+                <button id="filter-btn" class="btn btn-primary btn-sm">Show</button>
+            </div>
+
             <div data-controller="weekly-energy-price"
                  data-weekly-energy-price-chart-value="{{ chartData|json_encode|e('html_attr') }}"
+                 data-weekly-energy-price-period-type-value="{{ periodType|default('week') }}"
                  class="position-relative"
             >
-                <canvas data-weekly-energy-price-target="canvas" class="w-100" ></canvas>
+                <canvas data-weekly-energy-price-target="canvas" class="w-100 height"></canvas>
             </div>
         </div>
     </div>

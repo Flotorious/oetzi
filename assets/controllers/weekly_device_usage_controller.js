@@ -35,49 +35,48 @@ const unregisteredLabelPlugin = {
 export default class extends Controller {
     static targets = ['canvas'];
     static values = {
-        chart: Object,
-        devices: Array
+        chart: Object
     };
 
     connect() {
-        const ctx = this.canvasTarget.getContext('2d');
-        this.chart = new Chart(ctx, {
+        this.renderChart(this.chartValue);
+        document.getElementById('device-usage-filter-btn').addEventListener('click', () => this.onFilter());
+    }
+
+    async onFilter() {
+        const start = document.getElementById('from-date').value;
+        const end = document.getElementById('to-date').value;
+        if (!start || !end) return;
+
+        const params = new URLSearchParams({ start, end });
+        const response = await fetch(`/ajax/weekly-device-usage?${params.toString()}`);
+        const data = await response.json();
+
+        this.renderChart(data);
+    }
+
+    renderChart(chartData) {
+        if (this.chart) {
+            this.chart.destroy();
+        }
+        this.chart = new Chart(this.canvasTarget.getContext('2d'), {
             type: 'bar',
-            data: this.chartValue,
+            data: chartData,
             options: {
-                maintainAspectRatio: false,
                 responsive: true,
+                maintainAspectRatio: true,
                 plugins: {
-                    title: {
-                        display: true,
-                        text: 'Daily Energy Usage by Device'
-                    }
-                },
-                onClick: (event, elements) => {
-                    if (!elements.length) return;
-
-                    const element = elements[0];
-                    const dataset = this.chart.data.datasets[element.datasetIndex];
-
-                    if (dataset.label === 'Unregistered Consumption') {
-                        window.location.href = '/profile/user-device'
-                    }
-                },
-                onHover: (event, elements) => {
-                    const canvas = this.chart.canvas;
-                    if (elements.length && this.chart.data.datasets[elements[0].datasetIndex].label === 'Unregistered Consumption') {
-                        canvas.style.cursor = 'pointer';
-                    } else {
-                        canvas.style.cursor = 'default';
-                    }
+                    tooltip: { mode: 'index', intersect: false },
                 },
                 scales: {
                     x: {
-                        stacked: true
+                        stacked: true,
+                        title: { display: true, text: 'Date' }
                     },
                     y: {
                         stacked: true,
-                        beginAtZero: true
+                        beginAtZero: true,
+                        title: { display: true, text: 'kWh' }
                     }
                 }
             },

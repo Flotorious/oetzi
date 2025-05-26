@@ -8,14 +8,23 @@ export default class extends Controller {
     };
 
     connect() {
-        const rawData = this.chartValue;
+        this.renderChart(this.chartValue);
 
-        // Convert multiple datasets with 1 value each → 1 dataset with all values
+        // Listen for month change
+        const monthSelect = document.getElementById('piechart-month');
+        if (monthSelect) {
+            monthSelect.addEventListener('change', () => this.onMonthChange());
+        }
+    }
+
+    renderChart(rawData) {
+        if (this.chart) {
+            this.chart.destroy();
+        }
         const labels = rawData.datasets.map(ds => ds.label);
         const data = rawData.datasets.map(ds => ds.data[0] || 0);
         const backgroundColor = rawData.datasets.map(ds => ds.backgroundColor);
         const borderColor = rawData.datasets.map(ds => ds.borderColor);
-
         const total = data.reduce((sum, val) => sum + val, 0);
 
         const transformedChartData = {
@@ -49,10 +58,6 @@ export default class extends Controller {
                 responsive: true,
                 cutout: '70%',
                 plugins: {
-                    title: {
-                        display: true,
-                        text: 'Monthly Energy Price Breakdown'
-                    },
                     tooltip: {
                         mode: 'index',
                         intersect: false
@@ -61,5 +66,23 @@ export default class extends Controller {
             },
             plugins: [centerTextPlugin]
         });
+    }
+
+    onMonthChange() {
+        const month = document.getElementById('piechart-month').value;
+        const startDate = `${month}-01`;
+        const endDateObj = new Date(startDate);
+        endDateObj.setMonth(endDateObj.getMonth() + 1);
+        endDateObj.setDate(0);
+        const endDate = endDateObj.toISOString().split('T')[0];
+
+        fetch(`/ajax/monthly-energy-price?start=${startDate}&end=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                this.renderChart(data);
+            })
+            .catch(() => {
+                alert('Could not load chart data for the selected month.');
+            });
     }
 }

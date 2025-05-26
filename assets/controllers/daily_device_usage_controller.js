@@ -7,65 +7,66 @@ const priceRateBackgroundPlugin = {
         const { ctx, chartArea: { top, bottom }, scales: { x }, data } = chart;
         const bands = chart.options.plugins.priceRateBackground?.bands || [];
         const labels = data.labels;
-
         ctx.save();
-
         for (const band of bands) {
             const startLabel = labels.find(label => label >= band.start) || labels[0];
             const endLabel = labels.find(label => label >= band.end) || labels[labels.length - 1];
-
             const xStart = x.getPixelForValue(startLabel);
             const xEnd = x.getPixelForValue(endLabel);
-
             ctx.fillStyle = band.color || 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(xStart, top, xEnd - xStart, bottom - top);
         }
-
         ctx.restore();
     }
 };
 
-
-
 export default class extends Controller {
     static targets = ['canvas'];
-    static values = {
-        chart: Object
-    };
+    static values = { chart: Object };
 
     connect() {
-        if (!this.hasChartValue) {
-            console.warn("Missing chartValue");
-            return;
+        this.renderChart(this.chartValue);
+
+        // Listen for both dropdown and date input changes
+        const selectInput = document.getElementById('daily-usage-day');
+        const dateInput = document.getElementById('daily-usage-date');
+
+        if (selectInput) {
+            selectInput.addEventListener('change', () => this.onDayChange(selectInput.value));
         }
+        if (dateInput) {
+            dateInput.addEventListener('change', () => this.onDayChange(dateInput.value));
+        }
+    }
 
-        const ctx = this.canvasTarget.getContext('2d');
-        const { priceRateBands = [], ...chartData } = this.chartValue;
+    async onDayChange(day) {
+        if (!day) return;
+        const params = new URLSearchParams({ day });
+        const response = await fetch(`/ajax/daily-device-usage?${params.toString()}`);
+        const data = await response.json();
+        this.renderChart(data);
+    }
 
-        this.chart = new Chart(ctx, {
+    renderChart(chartData) {
+        if (this.chart) {
+            this.chart.destroy();
+        }
+        const { priceRateBands = [], ...plainChartData } = chartData;
+        this.chart = new Chart(this.canvasTarget.getContext('2d'), {
             type: 'line',
-            data: chartData,
+            data: plainChartData,
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
                 plugins: {
-                    title: {
-                        display: true,
-                        text: 'Energy Usage per day'
-                    },
-                    priceRateBackground: {
-                        bands: priceRateBands
-                    }
+                    priceRateBackground: { bands: priceRateBands }
                 },
                 interaction: {
                     mode: 'index',
                     intersect: false
                 },
                 scales: {
-                    x: {
-                        type: 'category',
-                        title: { display: true, text: 'Time of Day' }
-                    },
+                    x: { type: 'category' },
                     y: {
                         beginAtZero: true,
                         title: { display: true, text: 'kWh / 5 min' }

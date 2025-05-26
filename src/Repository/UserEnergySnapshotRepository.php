@@ -57,7 +57,7 @@ class UserEnergySnapshotRepository extends ServiceEntityRepository
             ->where('s.user = :user')
             ->andWhere('s.timestamp BETWEEN :start AND :end')
             ->setParameter('user', $user)
-            ->setParameter('start', (clone $day)->setTime(7, 59, 59))
+            ->setParameter('start', (clone $day)->setTime(0,0,0))
             ->setParameter('end', (clone $day)->setTime(23, 59, 59))
             ->orderBy('s.timestamp', 'ASC');
 

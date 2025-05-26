@@ -18,9 +18,13 @@ class UserDashboardDataService
     {
     }
 
-    public function getWeeklyDeviceUsageGraphData(User $user): array {
+    public function getWeeklyDeviceUsageGraphData(
+        User $user,
+        \DateTimeImmutable $startDate,
+        \DateTimeImmutable $endDate
+    ): array {
 
-        $deviceData = $this->deviceUsageLogRepository->getDailyDeviceEnergySummary($user);
+        $deviceData = $this->deviceUsageLogRepository->getDailyDeviceEnergySummary($user, $startDate, $endDate);
         $unregisteredData = $this->userEnergySnapshotRepository->getUnregisteredConsumptionPerDay($user);
 
         $labels = array_unique(array_column($deviceData, 'date'));
@@ -89,7 +93,7 @@ class UserDashboardDataService
 
         $labels = array_column($rawData, 'time_slot');
         $labels = array_unique($labels);
-        sort($labels); 
+        sort($labels);
 
         $byDevice = [];
         foreach ($rawData as $row) {
