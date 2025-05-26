@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Device;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,10 +17,12 @@ class DeviceRepository extends ServiceEntityRepository
         parent::__construct($registry, Device::class);
     }
 
-    public function countAllDevices(): int
+    public function countAllDevices(User $user): int
     {
         return (int) $this->createQueryBuilder('d')
             ->select('COUNT(d.id)')
+            ->where('d.user = :user')
+            ->setParameter('user', $user)
             ->getQuery()
             ->getSingleScalarResult();
     }

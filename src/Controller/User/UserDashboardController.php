@@ -63,7 +63,7 @@ class UserDashboardController extends AbstractDashboardController
             $changeMonthlyConst = $currentMonthConst - $lastMonthConst;
         }
 
-        $totalDevices = $this->deviceRepository->countAllDevices();
+        $totalDevices = $this->deviceRepository->countAllDevices($user);
 
         $startDate = (new \DateTimeImmutable('-6 days'))->setTime(0, 0, 0);
         $endDate = new \DateTimeImmutable();
