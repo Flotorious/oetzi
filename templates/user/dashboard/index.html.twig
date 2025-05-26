@@ -1,4 +1,5 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
+{% import _self as macros %}
 
 {% block content_title %}
 {% endblock %}
@@ -10,77 +11,7 @@
 
 {% block main %}
     <div class="ea-content">
-        <!-- Section - Bootstrap Brain Component -->
-        <!-- Card 1 - Bootstrap Brain Component -->
-        <section class="pb-3 pb-md-4 pb-xl-5">
-            <div class="row gy-3 gy-md-4">
-                <div class="col-12 col-sm-6 col-xl-3">
-                    {{ include('user/partials/_widget_card.html.twig', {
-                        title: 'Consump. change',
-                        value: percentageChangeMonthlyConsumption,
-                        icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        info: 'since last month today',
-                        info_icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        tooltip_description: 'since last month today some more text'
-                    }) }}
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    {{ include('user/partials/_widget_card.html.twig', {
-                        title: 'Log. Consump.',
-                        value: loggedMonthlyConsumption|format_number({ fraction_digit: 2 }) ~ ' Kwh',
-                        icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        info: 'since last month today',
-                        info_icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        tooltip_description: 'since last month today some more text'
-                    }) }}
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-                    {{ include('user/partials/_widget_card.html.twig', {
-                        title: 'Devices',
-                        value: totalDevices,
-                        icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        info: 'since last month today',
-                        info_icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        tooltip_description: 'since last month today some more text'
-                    }) }}
-                </div>
-                <div class="col-12 col-sm-6 col-xl-3">
-
-                    {{ include('user/partials/_widget_card.html.twig', {
-                        title: 'Price change',
-                        value: changeMonthlyConst|format_currency('EUR'),
-                        icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        info: 'since last month today',
-                        info_icon: {
-                            name: 'fas fa-arrow-circle-up',
-                            color: 'bg-danger-subtle text-danger',
-                        },
-                        tooltip_description: 'since last month today some more text'
-                    }) }}
-                </div>
-            </div>
-        </section>
+        {{ include('user/dashboard/partials/_widget_cards_top.html.twig') }}
 
         <!-- Section - Bootstrap Brain Component -->
         <section class="pb-3 pb-md-4 pb-xl-5">

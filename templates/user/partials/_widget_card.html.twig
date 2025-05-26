@@ -1,14 +1,14 @@
 <div class="card widget-card border-light shadow-sm">
     <div class="card-body p-4">
         <div class="row">
-            <div class="col-8">
+            <div class="col-10">
                 <h5 class="card-title widget-card-title mb-3">{{ title }}</h5>
                 <h4 class="card-subtitle text-body-secondary m-0">{{ value }}</h4>
             </div>
-            <div class="col-4">
+            <div class="col-2">
                 <div class="d-flex justify-content-end">
                     <span
-                        class="{{ icon.name }} {{ icon.color }} lh-1 text-white bg-primary rounded-circle p-3 d-flex align-items-center justify-content-center">
+                        class="{{ icon }} lh-1 text-white bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center">
                     </span>
                 </div>
             </div>
@@ -20,7 +20,7 @@
                      data-bs-html="true"
                      title="{{ tooltip_description }}">
                     <span
-                        class="{{ info_icon.name }} {{ info_icon.color }} lh-1 me-3 rounded-circle p-1 d-flex align-items-center justify-content-center"></span>
+                        class="{{ info_icon }} lh-1 me-3 rounded-circle p-1 d-flex align-items-center justify-content-center"></span>
                     <div>
                         <p class="fs-7 mb-0 text-secondary">{{ info }}</p>
                     </div>

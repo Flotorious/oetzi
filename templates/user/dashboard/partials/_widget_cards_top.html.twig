@@ -1,0 +1,54 @@
+{% import 'macros.html.twig' as macros %}
+
+<!-- Section - Bootstrap Brain Component -->
+<!-- Card 1 - Bootstrap Brain Component -->
+<section class="pb-3 pb-md-4 pb-xl-5">
+    <div class="row gy-3 gy-md-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            {{ include('user/partials/_widget_card.html.twig', {
+                title: 'Consump. change',
+                value: percentageChangeMonthlyConsumption,
+                icon: 'fa-regular fa-lightbulb bg-primary-subtle text-primary',
+                info: 'since last month today',
+                info_icon: macros.sign((percentageChangeMonthlyConsumption|replace({'%':''}))*1) == '+'
+                ? 'fas fa-arrow-circle-up bg-danger-subtle text-danger'
+                    : 'fas fa-arrow-circle-down bg-success-subtle text-success',
+                tooltip_description: 'since last month today some more text'
+            }) }}
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            {{ include('user/partials/_widget_card.html.twig', {
+                title: 'Log. Consump.',
+                value: loggedMonthlyConsumption|format_number({ fraction_digit: 2 }) ~ ' Kwh',
+                icon: 'fa-regular fa-chart-bar bg-primary-subtle text-primary',
+                info: 'since last month today',
+                info_icon: macros.sign(loggedMonthlyConsumption) == '+'
+                        ? 'fas fa-arrow-circle-up bg-danger-subtle text-danger'
+                        : 'fas fa-arrow-circle-down bg-success-subtle text-success',
+                tooltip_description: 'since last month today some more text'
+            }) }}
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            {{ include('user/partials/_widget_card.html.twig', {
+                title: 'Devices',
+                value: totalDevices,
+                icon: 'fa fa-house-laptop bg-primary-subtle text-primary',
+                info: 'since last month today',
+                info_icon: 'fas fa-circle bg-warning-subtle text-warning',
+                tooltip_description: 'since last month today some more text'
+            }) }}
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            {{ include('user/partials/_widget_card.html.twig', {
+                title: 'Price change',
+                value: changeMonthlyConst|format_currency('EUR'),
+                icon: 'fa-regular fa-credit-card bg-primary-subtle text-primary',
+                info: 'since last month today',
+                info_icon: macros.sign(loggedMonthlyConsumption) == '+'
+                    ? 'fas fa-arrow-circle-up bg-danger-subtle text-danger'
+                    : 'fas fa-arrow-circle-down bg-success-subtle text-success',
+                tooltip_description: 'since last month today some more text'
+            }) }}
+        </div>
+    </div>
+</section>
