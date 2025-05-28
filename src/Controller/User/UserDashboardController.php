@@ -193,27 +193,34 @@ class UserDashboardController extends AbstractDashboardController
     {
         $userId = $this->getUser()->getId();
 
-        yield MenuItem::linkToDashboard('My Dashboard', 'fas fa-chart-line');
-        yield MenuItem::subMenu('Graphs', 'fas fa-chart-bar')->setSubItems([
-            MenuItem::linkToRoute('Logged Usage / day', 'fas fa-microchip', 'graph_daily_device_usage'),
-            MenuItem::linkToRoute('Energy Usage / week', 'fas fa-bolt', 'graph_weekly_device_usage'),
-            MenuItem::linkToRoute('Energy Usage / day', 'fas fa-calendar', 'graph_daily_energy_usage'),
-            MenuItem::linkToRoute('Energy Usage / month', 'fas fa-calendar', 'graph_monthly_energy_usage'),
-            MenuItem::linkToRoute('Energy Price / week', 'fas fa-euro', 'graph_weekly_energy_price'),
-            MenuItem::linkToRoute('Energy Price / month', 'fas fa-euro', 'graph_monthly_energy_price'),
-        ]);
+        yield MenuItem::linkToDashboard('My Dashboard', 'fas fa-object-group');
+
+        yield MenuItem::section('Account');
+        yield MenuItem::linkToCrud('Devices', 'fas fa-laptop', Device::class);
+        yield MenuItem::linkToCrud('Price Rates', 'fa fa-credit-card', PriceRatePeriod::class);
         yield MenuItem::linkToUrl(
-            'Edit Profile',
-            'fa fa-user',
+            'Profile',
+            'fa-regular fa-user',
             $this->adminUrlGenerator
                 ->setController(UserCrudController::class)
                 ->setAction('edit')
                 ->setEntityId($userId)
                 ->generateUrl()
         );
-        yield MenuItem::linkToCrud('My Devices', 'fas fa-microchip', Device::class);
-        yield MenuItem::linkToCrud('Usage Logs', 'fa fa-clock', DeviceUsageLog::class);
-        yield MenuItem::linkToCrud('Energy Logs', 'fa fa-clock', UserEnergySnapshot::class);
-        yield MenuItem::linkToCrud('Price Rate', 'fa fa-clock', PriceRatePeriod::class);
+
+        yield MenuItem::section('Graphs');
+        yield MenuItem::linkToRoute('Device Consump. / day', 'fa fa-chart-line', 'graph_daily_device_usage');
+        yield MenuItem::linkToRoute('Device Consump. / week', 'fa fa-chart-line', 'graph_weekly_device_usage');
+        yield MenuItem::linkToRoute('SmartMeter Reads / day', 'fa fa-chart-line', 'graph_daily_energy_usage');
+        yield MenuItem::linkToRoute('SmartMeter Reads / month', 'fa fa-chart-line', 'graph_monthly_energy_usage');
+        yield MenuItem::linkToRoute('SmartMeter Reads Price / week', 'fa fa-chart-line', 'graph_weekly_energy_price');
+        yield MenuItem::linkToRoute('SmartMeter Reads Price / month', 'fa fa-chart-line', 'graph_monthly_energy_price');
+
+        yield MenuItem::section('Logs');
+        yield MenuItem::linkToCrud('Device Usage', 'fa-regular fa-rectangle-list', DeviceUsageLog::class);
+        yield MenuItem::linkToCrud('Energy SmartMeter', 'fa-regular fa-rectangle-list', UserEnergySnapshot::class);
+
+        yield MenuItem::section();
+        yield MenuItem::linkToLogout('Logout', 'fa fa-sign-out');
     }
 }
