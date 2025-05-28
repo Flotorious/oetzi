@@ -7,7 +7,7 @@
     <nav class="custom-navbar navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
         <div class="container">
             <a class="navbar-brand" href="{{ path('app_home') }}">
-                <img src="{{ asset('build/images/logo-white.png') }}" />
+                <img src="{{ asset('build/images/logo-white.png') }}"/>
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni"
@@ -38,7 +38,12 @@
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_login') }}">
-                               LogIn
+                                LogIn
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_register') }}">
+                                Register
                             </a>
                         </li>
                     {% endif %}
@@ -56,8 +61,7 @@
                     <div class="intro-excerpt">
                         <h1>Know your consumption</h1>
                         <p class="mb-4">
-                            Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
-                            vulputate velit imperdiet dolor tempor tristique.
+                            Understand, control, and optimize your home energy usage made simple.
                         </p>
                         <p>
                             <a href="#" class="btn btn-white-outline">Explore</a>
@@ -79,52 +83,62 @@
         <div class="container">
             <div class="row justify-content-between">
                 <div class="col-lg-6">
-                    <h2 class="section-title">Why Choose Us</h2>
-                    <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit
-                        imperdiet dolor tempor tristique.</p>
+                    <h2 class="section-title">EnergyViz in a nutshell</h2>
+                    <p>
+                        EnergyViz is your smart companion for tracking appliance-level electricity consumption,
+                        revealing patterns, and helping you cut costs—all in an intuitive, data-rich interface.
+                    </p>
 
                     <div class="row my-5">
                         <div class="col-6 col-md-6">
                             <div class="feature">
-                                <div class="icon">
-                                    <img src="{{ asset('build/images/truck.svg') }}" alt="Image" class="imf-fluid">
+                                <div class="icon p-2">
+                                    <span class="fa fa-sliders fa-2x text-black">
+                                    </span>
                                 </div>
-                                <h3>Fast &amp; Free Shipping</h3>
-                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
-                                    vulputate.</p>
+                                <h3>Fast & Simple Setup</h3>
+                                <p>
+                                    Start monitoring your energy usage within minutes. Connect, tag devices, and get real insights without needing technical knowledge.
+                                </p>
                             </div>
                         </div>
 
                         <div class="col-6 col-md-6">
                             <div class="feature">
-                                <div class="icon">
-                                    <img src="{{ asset('build/images/bag.svg') }}" alt="Image" class="imf-fluid">
+                                <div class="icon p-2">
+                                    <span class="fa fa-chart-line fa-2x text-black">
+                                    </span>
                                 </div>
-                                <h3>Easy to Shop</h3>
-                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
-                                    vulputate.</p>
+                                <h3>Visual Energy Insights</h3>
+                                <p>
+                                    Interactive graphs and personalized dashboards let you explore real-time and historical consumption—making energy-saving decisions effortless.
+                                </p>
                             </div>
                         </div>
 
                         <div class="col-6 col-md-6">
                             <div class="feature">
-                                <div class="icon">
-                                    <img src="{{ asset('build/images/support.svg') }}" alt="Image" class="imf-fluid">
+                                <div class="icon p-2">
+                                    <span class="fa fa-laptop-code fa-2x text-black">
+                                    </span>
                                 </div>
-                                <h3>24/7 Support</h3>
-                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
-                                    vulputate.</p>
+                                <h3>Appliance-Level Tracking</h3>
+                                <p>
+                                    Break down your energy consumption by each appliance and see which ones consume the most—perfect for making smarter, greener choices.
+                                </p>
                             </div>
                         </div>
 
                         <div class="col-6 col-md-6">
                             <div class="feature">
-                                <div class="icon">
-                                    <img src="{{ asset('build/images/return.svg') }}" alt="Image" class="imf-fluid">
+                                <div class="icon p-2">
+                                    <span class="fa fa-arrows-rotate fa-2x text-black">
+                                    </span>
                                 </div>
-                                <h3>Hassle Free Returns</h3>
-                                <p>Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam
-                                    vulputate.</p>
+                                <h3>Track & Optimize</h3>
+                                <p>
+                                    Log your daily appliance usage, see where energy is going, and discover how small changes can lead to big savings.
+                                </p>
                             </div>
                         </div>
 
@@ -135,7 +149,7 @@
                     <div class="img-wrap">
                         <img src="{{ asset('build/images/workperch-s1z9Fnxxnhg-unsplash.jpg') }}"
                              alt="Image" class="img-fluid"
-                            >
+                        >
                     </div>
                 </div>
 
@@ -144,38 +158,8 @@
     </div>
     <!-- End Why Choose Us Section -->
 
-    <!-- Start We Help Section -->
-    <div class="we-help-section why-choose-section">
-        <div class="container">
-            <div class="row justify-content-between">
-                <div class="col-lg-6 mb-lg-0">
-                    <div class="img-wrap">
-                        <img src="{{ asset('build/images/teacreativelife-soo-chung-_9zbLm0FLhc-unsplash.jpg') }}"
-                             alt="Image" class="img-fluid"
-                        >
-                    </div>
-                </div>
-                <div class="col-lg-5 ps-lg-5">
-                    <h2 class="section-title mb-4">We Help You Make Modern Interior Design</h2>
-                    <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada.
-                        Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque
-                        habitant morbi tristique senectus et netus et malesuada</p>
-
-                    <ul class="list-unstyled custom-list my-4">
-                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                        <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                    </ul>
-                    <p><a herf="#" class="btn">Explore</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End We Help Section -->
-
     <!-- Start Testimonial Slider -->
-    <div class="testimonial-section">
+    <div class="testimonial-section bg-primary-subtle">
         <div class="container">
             <div class="row">
                 <div class="col-lg-7 mx-auto text-center">
@@ -202,7 +186,8 @@
 
                                             <div class="author-info">
                                                 <div class="author-pic">
-                                                    <img src="{{ asset('build/images/person-1.png') }}" alt="Maria Jones"
+                                                    <img src="{{ asset('build/images/person-1.png') }}"
+                                                         alt="Maria Jones"
                                                          class="img-fluid">
                                                 </div>
                                                 <h3 class="font-weight-bold">Maria Jones</h3>
