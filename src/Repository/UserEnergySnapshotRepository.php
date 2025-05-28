@@ -198,29 +198,11 @@ class UserEnergySnapshotRepository extends ServiceEntityRepository
         return round($total, 2);
     }
 
-    // TODO check if result is correct
-    public function getMonthlyConsumption(User $user): float
-    {
-        $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
-        $end = new \DateTimeImmutable();
-
-        $qb = $this->createQueryBuilder('s')
-            ->select('SUM(s.consumptionDelta)')
-            ->where('s.user = :user')
-            ->andWhere('s.timestamp BETWEEN :start AND :end')
-            ->setParameter('user', $user)
-            ->setParameter('start', $start)
-            ->setParameter('end', $end);
-
-        return (float) $qb->getQuery()->getSingleScalarResult();
-    }
-
-    public function getMonthlyConsumptionUntilDay(User $user, \DateTimeInterface $referenceDate): float
+    public function getMonthlyConsumptionUntilDate(User $user, \DateTimeImmutable $referenceDate): float
     {
         $start = (new \DateTimeImmutable($referenceDate->format('Y-m-01')))
             ->setTime(0, 0);
-        $end = (new \DateTimeImmutable($referenceDate->format('Y-m-d')))
-            ->setTime(23, 59, 59);
+        $end = $referenceDate;
 
         $qb = $this->createQueryBuilder('s')
             ->select('SUM(s.consumptionDelta)')

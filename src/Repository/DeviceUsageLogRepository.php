@@ -47,10 +47,11 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
     }
 
     // TODO check if result is correct
-    public function getLoggedMonthlyConsumption(User $user): float
+    public function getLoggedMonthlyConsumptionUntilDate(User $user, \DateTimeImmutable $referenceDate): float
     {
         $start = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
-        $end = $start->modify('first day of next month');
+        $end = $referenceDate;
+
 
         $conn = $this->getEntityManager()->getConnection();
 
@@ -72,7 +73,6 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
 
         return (float) ($result->fetchOne() ?? 0);
     }
-
 
     public function getDeviceUsagePerIntervalForDay(User $user, \DateTimeInterface $day): array
     {

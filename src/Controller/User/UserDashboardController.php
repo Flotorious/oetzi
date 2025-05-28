@@ -40,18 +40,22 @@ class UserDashboardController extends AbstractDashboardController
         $startOfThisMonth = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
         $lastMonthSameDay = $today->modify('-1 month');
 
-        $currentMonthConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumptionUntilDay($user, $today);
-        $lastMonthConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumptionUntilDay($user, $lastMonthSameDay);
+        $loggedMonthlyConsumption = $this->deviceUsageLogRepository->getLoggedMonthlyConsumptionUntilDate($user,$today);
+        $currentMonthConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumptionUntilDate($user, $today);
+        $lastMonthConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumptionUntilDate($user, $lastMonthSameDay);
 
+        if ($currentMonthConsumption === 0.0) {
+            $percentageChangeLogMonthlyConsumption = $loggedMonthlyConsumption >= 0 ? 100 : 0;
+        } else {
+            $percentageChangeLogMonthlyConsumption = ( $loggedMonthlyConsumption * 100) / $currentMonthConsumption;
+        }
+
+        $changeMonthlyConsumtion = $currentMonthConsumption - $lastMonthConsumption;
         if ($lastMonthConsumption === 0.0) {
             $percentageChangeMonthlyConsumption = $currentMonthConsumption > 0 ? 100 : 0;
         } else {
-            $percentageChangeMonthlyConsumption = (($currentMonthConsumption - $lastMonthConsumption) / $lastMonthConsumption) * 100;
+            $percentageChangeMonthlyConsumption = (($changeMonthlyConsumtion) / $lastMonthConsumption) * 100;
         }
-
-        // TODO use the getMonthlyConsumptionUntilDay instead
-        $totalMonthlyConsumption = $this->userEnergySnapshotRepository->getMonthlyConsumption($user);
-        $loggedMonthlyConsumption = $this->deviceUsageLogRepository->getLoggedMonthlyConsumption($user);
 
         // TODO use the getTotalMonthlyCostUntil instead
         $totalMonthlyCost = $this->userEnergySnapshotRepository->getTotalMonthlyCost($user);
@@ -74,13 +78,14 @@ class UserDashboardController extends AbstractDashboardController
 
         return $this->render('user/dashboard/index.html.twig', [
             'user' => $user,
-            'totalMonthlyConsumption' => $totalMonthlyConsumption,
             'loggedMonthlyConsumption' => $loggedMonthlyConsumption,
             'currentMonthConst' => $currentMonthConst,
             'totalDevices' => $totalDevices,
             'currentMonthConsumption' => $currentMonthConsumption,
             'lastMonthConsumption' => $lastMonthConsumption,
             'percentageChangeMonthlyConsumption'=> sprintf('%+.2f%%', $percentageChangeMonthlyConsumption),
+            'changeMonthlyConsumtion'=> $changeMonthlyConsumtion,
+            'percentageChangeLogMonthlyConsumption'=> $percentageChangeLogMonthlyConsumption,
             'changeMonthlyConst'=> $changeMonthlyConst,
             'chartDataPrice'=> $dataPrice,
             'chartDataEnergy'=> $dataEnergyConsumption,
