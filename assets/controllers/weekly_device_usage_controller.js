@@ -12,7 +12,7 @@ const unregisteredLabelPlugin = {
         const dataset = chart.getDatasetMeta(datasetIndex);
         ctx.save();
         ctx.fillStyle = 'black';
-        ctx.font = 'bold 16px sans-serif';
+        ctx.font = '16px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -67,6 +67,26 @@ export default class extends Controller {
                 maintainAspectRatio: true,
                 plugins: {
                     tooltip: { mode: 'index', intersect: false },
+                },
+                onClick: (event, elements) => {
+                    if (!elements.length) return;
+                    const element = elements[0];
+                    const dataset = this.chart.data.datasets[element.datasetIndex];
+
+                    if (dataset.label === 'Unregistered Consumption') {
+                        window.location.href = '/profile/user-device';
+                    }
+                },
+                onHover: (event, elements) => {
+                    const canvas = this.chart.canvas;
+                    if (
+                        elements.length &&
+                        this.chart.data.datasets[elements[0].datasetIndex].label === 'Unregistered Consumption'
+                    ) {
+                        canvas.style.cursor = 'pointer';
+                    } else {
+                        canvas.style.cursor = 'default';
+                    }
                 },
                 scales: {
                     x: {
