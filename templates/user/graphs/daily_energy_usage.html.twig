@@ -3,16 +3,29 @@
 {% block content_title %}
 {% endblock %}
 
+{% block content_top_header %}
+    <div class="w-100 d-block d-md-flex align-items-center pe-md-5">
+        <div>
+            <h1 class="fs-5">SmartMeter Reads</h1>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2 ps-md-5">
+            <label for="daily-usage-date" class="col-form-label me-2">Day:</label>
+            <input type="date" id="daily-usage-date" class="form-control form-control-sm rounded-2" style="width: auto;"
+                   value="{{ day is defined ? day|date('Y-m-d') : 'now'|date('Y-m-d') }}">
+            <button id="reset-zoom"
+                    class="btn btn-sm px-2 fs-7 btn-primary ms-3 shadow-sm"
+                    type="button">
+                Reset Zoom
+            </button>
+        </div>
+    </div>
+    {{ parent() }}
+{% endblock %}
+
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
-            <div class="mb-3 d-flex align-items-center gap-2">
-                <label for="daily-usage-date" class="me-2">Day:</label>
-                <input type="date" id="daily-usage-date"
-                       value="{{ day is defined ? day|date('Y-m-d') : 'now'|date('Y-m-d') }}">
-            </div>
             {{ include('user/graphs/partials/_daily_energy_usage.html.twig') }}
-            <button type="button" data-action="click->daily-energy-usage#resetZoom">Reset Zoom</button>
         </div>
     </div>
 {% endblock %}
