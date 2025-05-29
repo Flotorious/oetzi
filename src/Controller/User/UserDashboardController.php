@@ -54,7 +54,7 @@ class UserDashboardController extends AbstractDashboardController
         if ($lastMonthConsumption === 0.0) {
             $percentageChangeMonthlyConsumption = $currentMonthConsumption > 0 ? 100 : 0;
         } else {
-            $percentageChangeMonthlyConsumption = (($changeMonthlyConsumtion) / $lastMonthConsumption) * 100;
+            $percentageChangeMonthlyConsumption = ($changeMonthlyConsumtion / $lastMonthConsumption) * 100;
         }
 
         // TODO use the getTotalMonthlyCostUntil instead
@@ -83,7 +83,7 @@ class UserDashboardController extends AbstractDashboardController
             'totalDevices' => $totalDevices,
             'currentMonthConsumption' => $currentMonthConsumption,
             'lastMonthConsumption' => $lastMonthConsumption,
-            'percentageChangeMonthlyConsumption'=> sprintf('%+.2f%%', $percentageChangeMonthlyConsumption),
+            'percentageChangeMonthlyConsumption'=> $percentageChangeMonthlyConsumption,
             'changeMonthlyConsumtion'=> $changeMonthlyConsumtion,
             'percentageChangeLogMonthlyConsumption'=> $percentageChangeLogMonthlyConsumption,
             'changeMonthlyConst'=> $changeMonthlyConst,
@@ -158,7 +158,7 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $endDate = new \DateTimeImmutable('today 23:59:59');
+        $endDate = new \DateTimeImmutable();
         $startDate = $endDate->modify('-3 weeks')->modify('monday this week')->setTime(0, 0, 0);
 
         $data = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startDate, $endDate, 'week');
@@ -176,7 +176,7 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $endDate = new \DateTimeImmutable('today 23:59:59');
+        $endDate = new \DateTimeImmutable();
         $startDate = $endDate->modify('-5 months')->modify('first day of this month')->setTime(0, 0, 0);
 
         $data = $this->dashboardData->getPeriodEnergyPriceGraphData($user, $startDate, $endDate, 'month');
@@ -191,7 +191,7 @@ class UserDashboardController extends AbstractDashboardController
 
     public function configureDashboard(): Dashboard
     {
-        return Dashboard::new()->setTitle('User Dashboard')->disableDarkMode();
+        return Dashboard::new()->setTitle('')->disableDarkMode();
     }
 
     public function configureMenuItems(): iterable
@@ -218,7 +218,7 @@ class UserDashboardController extends AbstractDashboardController
         yield MenuItem::linkToRoute('Device Consump. / week', 'fa fa-chart-line', 'graph_weekly_device_usage');
         yield MenuItem::linkToRoute('SmartMeter Reads / day', 'fa fa-walkie-talkie', 'graph_daily_energy_usage');
         yield MenuItem::linkToRoute('SmartMeter Reads / month', 'fa fa-walkie-talkie', 'graph_monthly_energy_usage');
-        yield MenuItem::linkToRoute('SmartMeter Reads Price / week', 'fa fa-money-bill-trend-up', 'graph_weekly_energy_price');
+        //yield MenuItem::linkToRoute('SmartMeter Reads Price / week', 'fa fa-money-bill-trend-up', 'graph_weekly_energy_price');
         yield MenuItem::linkToRoute('SmartMeter Reads Price / month', 'fa fa-money-bill-trend-up', 'graph_monthly_energy_price');
 
         yield MenuItem::section('Logs');
