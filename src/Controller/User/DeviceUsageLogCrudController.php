@@ -4,12 +4,9 @@ namespace App\Controller\User;
 
 use App\Entity\DeviceUsageLog;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class DeviceUsageLogCrudController extends AbstractCrudController
@@ -27,8 +24,8 @@ class DeviceUsageLogCrudController extends AbstractCrudController
             TextField::new('title'),
             DateTimeField::new('startedAt'),
             DateTimeField::new('endedAt'),
-            IntegerField::new('duration')->setDisabled(true),
-            NumberField::new('energyUsedKWh', label: 'KWh used')->setDisabled(true),
+            IntegerField::new('durationPrettified', 'Duration'),
+            NumberField::new('energyUsedKWh', label: 'kWh')->setDisabled(true),
             TextField::new('device.user.email', 'Owner')
                 ->onlyOnIndex()
         ];

@@ -86,6 +86,27 @@ class DeviceUsageLog
         return $this;
     }
 
+    public function getDurationPrettified(): ?string
+    {
+        if ($this->startedAt && $this->endedAt) {
+            $interval = $this->startedAt->diff($this->endedAt);
+
+            $parts = [];
+            if ($interval->h > 0) {
+                $parts[] = $interval->h . 'h';
+            }
+            if ($interval->i > 0) {
+                $parts[] = $interval->i . 'm';
+            }
+            if ($interval->s > 0 || empty($parts)) {
+                $parts[] = $interval->s . 's';
+            }
+
+            return implode(' ', $parts);
+        }
+        return null;
+    }
+
     public function getEnergyUsedKWh(): ?float
     {
         return $this->energyUsedKWh;
@@ -115,18 +136,12 @@ class DeviceUsageLog
     public function setTitleFromData(): void
     {
         if ($this->getDevice() && $this->startedAt && $this->endedAt) {
-            $seconds = $this->endedAt->getTimestamp() - $this->startedAt->getTimestamp();
-
-            $minutes = ($this->endedAt->getTimestamp() - $this->startedAt->getTimestamp()) / 60;
-            $remainingSeconds = $seconds % 60;
-
             $this->title = sprintf(
-                '%s - %s to %s (%d min %d sec)',
+                '%s - %s to %s (%s)',
                 $this->device->getName(),
                 $this->startedAt->format('H:i'),
                 $this->endedAt->format('H:i'),
-                $minutes,
-                $remainingSeconds
+                $this->getDurationPrettified()
             );
         }
     }
@@ -149,5 +164,4 @@ class DeviceUsageLog
 
         return sprintf('Usage on %s', $this->startedAt?->format('Y-m-d H:i') ?? 'unknown time');
     }
-
 }
