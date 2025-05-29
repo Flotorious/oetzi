@@ -66,7 +66,26 @@ export default class extends Controller {
                 responsive: true,
                 maintainAspectRatio: true,
                 plugins: {
-                    tooltip: { mode: 'index', intersect: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        filter: function(context) {
+                            return context.parsed.y > 0;
+                        },
+                        itemSort: function(a, b) {
+                            return b.parsed.y - a.parsed.y;
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                // Show both the value and the unit
+                                let value = context.parsed.y;
+                                let unit = "kWh";
+                                if (value == null) return label;
+                                return `${label}: ${value} ${unit}`;
+                            },
+                        },
+                    },
                 },
                 onClick: (event, elements) => {
                     if (!elements.length) return;
