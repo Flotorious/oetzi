@@ -1,5 +1,8 @@
 import { Controller } from '@hotwired/stimulus';
 import Chart from 'chart.js/auto';
+import zoomPlugin from 'chartjs-plugin-zoom';
+
+Chart.register(zoomPlugin);
 
 const priceRateBackgroundPlugin = {
     id: 'priceRateBackground',
@@ -27,16 +30,15 @@ export default class extends Controller {
     connect() {
         this.renderChart(this.chartValue);
 
-        // Listen for both dropdown and date input changes
-        const selectInput = document.getElementById('daily-usage-day');
+        // Date change
         const dateInput = document.getElementById('daily-usage-date');
-
-        if (selectInput) {
-            selectInput.addEventListener('change', () => this.onDayChange(selectInput.value));
-        }
         if (dateInput) {
             dateInput.addEventListener('change', () => this.onDayChange(dateInput.value));
         }
+        // Reset zoom
+        document.getElementById('reset-zoom')?.addEventListener('click', () => {
+            this.chart?.resetZoom();
+        });
     }
 
     async onDayChange(day) {
@@ -51,29 +53,117 @@ export default class extends Controller {
         if (this.chart) {
             this.chart.destroy();
         }
+        const labels = chartData.labels;
+        const totalLabels = labels.length;
+
+        // Last 6 hours = 72 intervals (5 min each)
+        const showCount = 170;
+        const minIdx = Math.max(totalLabels - showCount, 0);
+        const minLabel = labels[minIdx];
+        const maxLabel = labels[totalLabels - 1];
+
         const { priceRateBands = [], ...plainChartData } = chartData;
         this.chart = new Chart(this.canvasTarget.getContext('2d'), {
             type: 'line',
-            data: plainChartData,
+            data: chartData,
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
                 plugins: {
-                    priceRateBackground: { bands: priceRateBands }
+                    legend: { display: false },
+                    zoom: {
+                        pan: { enabled: true, mode: 'x' },
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            mode: 'x',
+                        }
+                    },
+                    priceRateBackground: {
+                        bands: priceRateBands
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        filter: function(context) {
+                            return context.parsed.y > 0;
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label || '';
+                            }
+                        }
+                    }
                 },
                 interaction: {
                     mode: 'index',
                     intersect: false
                 },
                 scales: {
-                    x: { type: 'category' },
+                    x: {
+                        type: 'category',
+                        min: minLabel,
+                        max: maxLabel,
+                        ticks: {
+                            callback: function(value) {
+                                const label = this.getLabelForValue(value);
+                                if (!label) return '';
+                                const hour = parseInt(label.slice(11, 13), 10);
+                                if (label.endsWith(':00') && hour % 2 === 0) {
+                                    return label.slice(11); // "HH:mm"
+                                }
+                                return '';
+                            },
+                            autoSkip: false,
+                            maxRotation: 0,
+                            minRotation: 0,
+                        },
+                        grid: { display: false }
+                    },
                     y: {
                         beginAtZero: true,
-                        title: { display: true, text: 'kWh / 5 min' }
+                        title: { display: true, text: 'kWh / 10 min' }
                     }
                 }
             },
-            plugins: [priceRateBackgroundPlugin]
+            plugins: [zoomPlugin, priceRateBackgroundPlugin]
         });
+        this.renderPriceRateLegend(chartData.priceRateBands || []);
+    }
+
+    renderPriceRateLegend(bands) {
+        const legendContainer = document.getElementById('price-rate-legend');
+        if (!legendContainer) return;
+
+        legendContainer.innerHTML = ''; // Clear previous legend
+
+        if (bands.length === 0) return;
+
+        let legendHTML = '<div style="display:flex; flex-wrap:wrap; align-items:center;">';
+        legendHTML += '<div style="margin-right:12px;">Price Rate Periods:</div>';
+
+        bands.forEach(band => {
+            legendHTML += `
+            <span style="
+                display: flex;
+                align-items: center; 
+                margin-right: 16px;
+                font-size: 14px;
+            ">
+                <span style="
+                    display:inline-block;
+                    width: 20px;
+                    height: 12px;
+                    background: ${band.color};
+                    border-radius: 3px;
+                    margin-right: 6px;
+                    border: 1px solid #999;
+                "></span>
+                <span>${band.start} - ${band.end}</span>
+            </span>
+        `;
+        });
+
+        legendHTML += '</div>';
+        legendContainer.innerHTML = legendHTML;
     }
 }

@@ -1,21 +1,38 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 
-{% block content_title %}
+{% block content_top_header %}
+    <div class="w-100 d-block d-md-flex align-items-center pe-md-5">
+        <div>
+            <h1 class="fs-5">Daily Device Usage</h1>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2 ps-md-5">
+            <label for="daily-usage-date" class="col-form-label me-2">Day:</label>
+            <input type="date" id="daily-usage-date" class="form-control form-control-sm rounded-2" style="width: auto;"
+                   value="{{ day is defined ? day|date('Y-m-d') : 'now'|date('Y-m-d') }}">
+            <button id="reset-zoom" class="btn btn-sm px-2 fs-7 btn-outline-secondary ms-3 shadow-sm border border-light" type="button">
+                Reset Zoom
+            </button>
+        </div>
+    </div>
+    {{ parent() }}
 {% endblock %}
 
 {% block main %}
     <div class="ea-content">
         <div class="col-12">
-            <div class="mb-3 d-flex align-items-center gap-2">
-                <label for="device-usage-date" class="me-2">Day:</label>
-                <input type="date" id="device-usage-date"
-                       value="{{ day is defined ? day|date('Y-m-d') : 'now'|date('Y-m-d') }}">
-            </div>
-            <div data-controller="daily-device-usage"
-                 data-daily-device-usage-chart-value="{{ chartData|json_encode|e('html_attr') }}"
-                 class="position-relative"
+            {# Chart container with minimum height and relative positioning for overlays #}
+            <div
+                data-controller="daily-device-usage"
+                data-daily-device-usage-chart-value="{{ chartData|json_encode|e('html_attr') }}"
+                class="position-relative chart-container" {# Added chart-container class for styling #}
+                style="min-height: 400px; width: 100%;" {# Ensure it has some height #}
             >
-                <canvas data-daily-device-usage-target="canvas" class="w-100"></canvas>
+                <div id="price-rate-legend" class="d-flex justify-content-center"></div>
+                <canvas data-daily-device-usage-target="canvas"></canvas> {# Removed w-100, let container control #}
+                <div data-daily-device-usage-target="emptyMessage"
+                     class="position-absolute top-50 start-50 translate-middle text-muted" style="display: none;">
+                    No usage data available for this day.
+                </div>
             </div>
         </div>
     </div>
@@ -25,5 +42,3 @@
     {{ parent() }}
     {{ encore_entry_script_tags('app') }}
 {% endblock %}
-
-
