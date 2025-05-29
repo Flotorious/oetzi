@@ -222,7 +222,7 @@ class UserDashboardController extends AbstractDashboardController
         yield MenuItem::linkToRoute('SmartMeter Reads Price / month', 'fa fa-chart-line', 'graph_monthly_energy_price');
 
         yield MenuItem::section('Logs');
-        yield MenuItem::linkToCrud('Device Usage', 'fa-regular fa-rectangle-list', DeviceUsageLog::class);
+        yield MenuItem::linkToCrud('Device Usage', 'fa-regular fa-rectangle-list', DeviceUsageLog::class)->setDefaultSort(['startedAt' => 'DESC']);
         yield MenuItem::linkToCrud('Energy SmartMeter', 'fa-regular fa-rectangle-list', UserEnergySnapshot::class);
 
         yield MenuItem::section();

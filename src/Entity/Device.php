@@ -28,13 +28,24 @@ class Device
     #[ORM\Column(type: 'boolean')]
     private ?bool $isActive = false;
 
-    #[ORM\ManyToOne(inversedBy: 'devices')]
+    #[ORM\ManyToOne(
+        targetEntity: User::class,
+        inversedBy: 'devices'
+    )]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     /**
-     * @var Collection<int, DeviceUsageLog>
-     */
-    #[ORM\OneToMany(targetEntity: DeviceUsageLog::class, mappedBy: 'device', cascade: ['persist', 'remove'], orphanRemoval: true)]
+        * @var Collection<int, DeviceUsageLog>
+    */
+    #[ORM\OneToMany(
+        targetEntity: DeviceUsageLog::class,
+        mappedBy: 'device',
+        cascade: ['persist','remove'],
+        fetch: 'EXTRA_LAZY',
+        orphanRemoval: true
+    )]
+    #[ORM\OrderBy(['startedAt' => 'DESC'])]
     private Collection $deviceUsageLogs;
 
     public function __construct()
