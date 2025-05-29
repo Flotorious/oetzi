@@ -15,6 +15,7 @@ services:
       - TZ=Europe/Vienna
     depends_on:
       - database
+    restart: unless-stopped
 
   database:
     image: mariadb:${MARIADB_VERSION:-10.11}
@@ -46,6 +47,7 @@ services:
       - caddy_config:/config
     depends_on:
       - app
+    restart: unless-stopped
 
   messenger-consumer:
     build:
