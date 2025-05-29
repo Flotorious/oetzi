@@ -33,7 +33,7 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
                 AND dul.started_at >= :start
                 AND dul.started_at < :end
             GROUP BY DATE(dul.started_at), d.id, d.name
-            ORDER BY date ASC
+            ORDER BY dul.energy_used_kwh DESC
         ";
 
         $stmt = $conn->prepare($sql);
@@ -74,31 +74,20 @@ class DeviceUsageLogRepository extends ServiceEntityRepository
         return (float) ($result->fetchOne() ?? 0);
     }
 
-    public function getDeviceUsagePerIntervalForDay(User $user, \DateTimeInterface $day): array
+    public function findLogsByUserAndDay(User $user, \DateTimeInterface $day): array
     {
-        $conn = $this->getEntityManager()->getConnection();
+        $qb = $this->createQueryBuilder('log')
+            ->join('log.device', 'd')
+            ->where('d.user = :user')
+            ->andWhere('log.startedAt >= :dayStart')
+            ->andWhere('log.startedAt < :dayEnd')
+            ->setParameter('user', $user)
+            ->setParameter('dayStart', (clone $day)->setTime(0,0,0))
+            ->setParameter('dayEnd', (clone $day)->modify('+1 day')->setTime(0,0,0))
+            ->orderBy('d.name', 'ASC')
+            ->addOrderBy('log.startedAt', 'ASC');
 
-        $sql = "
-            SELECT
-                d.name AS device,
-                d.id AS deviceId,
-                DATE_FORMAT(dul.started_at, '%H:%i') AS time_slot,
-                SUM(dul.energy_used_kwh) AS energy
-            FROM device_usage_log dul
-            JOIN device d ON d.id = dul.device_id
-            WHERE d.user_id = :user
-              AND DATE(dul.started_at) = :day
-            GROUP BY device, time_slot
-            ORDER BY time_slot ASC
-        ";
-
-        $stmt = $conn->prepare($sql);
-        $result = $stmt->executeQuery([
-            'user' => $user->getId(),
-            'day' => $day->format('Y-m-d'),
-        ]);
-
-        return $result->fetchAllAssociative();
+        return $qb->getQuery()->getResult();
     }
 
     public function findLogsForUserAndDay(User $user, \DateTimeInterface $day): array
