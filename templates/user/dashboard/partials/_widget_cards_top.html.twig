@@ -1,5 +1,3 @@
-{% import 'macros.html.twig' as macros %}
-
 <!-- Section - Bootstrap Brain Component -->
 <!-- Card 1 - Bootstrap Brain Component -->
 <section class="pb-3 pb-md-4 pb-xl-5">
@@ -7,11 +5,11 @@
         <div class="col-12 col-sm-6 col-xl-3">
             {{ include('user/partials/_widget_card.html.twig', {
                 title: 'Consump. change',
-                value: percentageChangeMonthlyConsumption,
+                value: percentageChangeMonthlyConsumption|format_number({ fraction_digit: 2}) ~ '%',
                 icon: 'fa-regular fa-lightbulb bg-primary-subtle text-primary',
                 info: 'Comparing to last month today.',
-                info_icon: macros.sign((percentageChangeMonthlyConsumption|replace({'%':''}))*1) == '+'
-                ? 'fas fa-arrow-circle-up bg-danger-subtle text-danger'
+                info_icon: percentageChangeMonthlyConsumption > 0
+                    ? 'fas fa-arrow-circle-up bg-danger-subtle text-danger'
                     : 'fas fa-arrow-circle-down bg-success-subtle text-success',
                 tooltip_description: 'Your energy consumption is ' ~ changeMonthlyConsumtion|format_number({ fraction_digit: 2}) ~ ' KWh comparing to last month today.'
             }) }}
@@ -42,7 +40,7 @@
                 value: changeMonthlyConst|format_currency('EUR'),
                 icon: 'fa-regular fa-credit-card bg-primary-subtle text-primary',
                 info: 'Comparing to last month today.',
-                info_icon: macros.sign(loggedMonthlyConsumption) == '+'
+                info_icon: changeMonthlyConst > 0
                     ? 'fas fa-arrow-circle-up bg-danger-subtle text-danger'
                     : 'fas fa-arrow-circle-down bg-success-subtle text-success',
                 tooltip_description: 'You reduced/increased your payment with ' ~ changeMonthlyConst|format_currency('EUR') ~ ' comparing to last month today.'
