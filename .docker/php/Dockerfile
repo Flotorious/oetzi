@@ -13,6 +13,10 @@ RUN { \
       echo 'date.timezone=Europe/Vienna'; \
     } > /usr/local/etc/php/conf.d/99-timezone.ini
 
+#increase memory
+ARG PHP_MEMORY_LIMIT=512M
+RUN echo "memory_limit = ${PHP_MEMORY_LIMIT}" > /usr/local/etc/php/conf.d/99-custom-memory-limit.ini
+
 RUN apt-get update && apt-get install -y \
     git zip unzip curl libicu-dev libonig-dev libzip-dev libpng-dev \
     && docker-php-ext-install pdo pdo_mysql intl zip
