@@ -113,7 +113,7 @@ class UserDashboardController extends AbstractDashboardController
     {
         $user = $this->getUser();
 
-        $day = new \DateTimeImmutable('2025-05-20');
+        $day = new \DateTimeImmutable();
 
         $data = $this->dashboardData->getDailyDeviceUsageGraphData($user, $day);
 
@@ -216,10 +216,10 @@ class UserDashboardController extends AbstractDashboardController
         yield MenuItem::section('Graphs');
         yield MenuItem::linkToRoute('Device Consump. / day', 'fa fa-chart-line', 'graph_daily_device_usage');
         yield MenuItem::linkToRoute('Device Consump. / week', 'fa fa-chart-line', 'graph_weekly_device_usage');
-        yield MenuItem::linkToRoute('SmartMeter Reads / day', 'fa fa-chart-line', 'graph_daily_energy_usage');
-        yield MenuItem::linkToRoute('SmartMeter Reads / month', 'fa fa-chart-line', 'graph_monthly_energy_usage');
-        yield MenuItem::linkToRoute('SmartMeter Reads Price / week', 'fa fa-chart-line', 'graph_weekly_energy_price');
-        yield MenuItem::linkToRoute('SmartMeter Reads Price / month', 'fa fa-chart-line', 'graph_monthly_energy_price');
+        yield MenuItem::linkToRoute('SmartMeter Reads / day', 'fa fa-walkie-talkie', 'graph_daily_energy_usage');
+        yield MenuItem::linkToRoute('SmartMeter Reads / month', 'fa fa-walkie-talkie', 'graph_monthly_energy_usage');
+        yield MenuItem::linkToRoute('SmartMeter Reads Price / week', 'fa fa-money-bill-trend-up', 'graph_weekly_energy_price');
+        yield MenuItem::linkToRoute('SmartMeter Reads Price / month', 'fa fa-money-bill-trend-up', 'graph_monthly_energy_price');
 
         yield MenuItem::section('Logs');
         yield MenuItem::linkToCrud('Device Usage', 'fa-regular fa-rectangle-list', DeviceUsageLog::class)->setDefaultSort(['startedAt' => 'DESC']);
