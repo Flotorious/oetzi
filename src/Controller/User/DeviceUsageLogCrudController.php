@@ -24,7 +24,7 @@ class DeviceUsageLogCrudController extends AbstractCrudController
             TextField::new('title'),
             DateTimeField::new('startedAt'),
             DateTimeField::new('endedAt'),
-            TextField::new('energyUsedKWh', label: 'kWh')->setDisabled(true),
+            NumberField::new('energyUsedKWh', label: 'kWh')->setDisabled(true),
             TextField::new('durationPrettified', 'Duration')->setDisabled(true),
             TextField::new('device.user.email', 'Owner')
                 ->onlyOnIndex()
