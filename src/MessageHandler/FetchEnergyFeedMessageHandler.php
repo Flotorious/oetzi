@@ -26,7 +26,11 @@ final readonly class FetchEnergyFeedMessageHandler
             if (!$url = $user->getFeedUrl()) continue;
 
             try {
-                $response = $this->http->request('GET', $url);
+                $response = $this->http->request('GET', $url, [
+                    'headers' => [
+                        'Host' => 'energyviz.localhost',
+                    ],
+                ]);
                 $data = $response->toArray();
 
                 // Assume JSON format: ['timestamp' => ..., 'consumption_kwh' => ...]

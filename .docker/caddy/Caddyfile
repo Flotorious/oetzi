@@ -3,6 +3,11 @@ flofield.cosylab.at, oetzi.cosylab.at {
     php_fastcgi app:9000
     file_server
 
+    handle_path /fake-provider/* {
+        # No authentication on this path
+        # (requests here are handled directly)
+    }
+
     basicauth /* {
         daniel $2a$12$S4Lk.jT/xjTLHvEaA0QFPe9kXgz1sDCVUqwK.c2Fk.dxAv/VLSThi
     }

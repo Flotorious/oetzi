@@ -223,7 +223,8 @@ class UserDashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Logs');
         yield MenuItem::linkToCrud('Device Usage', 'fa-regular fa-rectangle-list', DeviceUsageLog::class)->setDefaultSort(['startedAt' => 'DESC']);
-        yield MenuItem::linkToCrud('Energy SmartMeter', 'fa-regular fa-rectangle-list', UserEnergySnapshot::class);
+        yield MenuItem::linkToCrud('Energy SmartMeter', 'fa-regular fa-rectangle-list', UserEnergySnapshot::class)
+            ->setController(\App\Controller\User\UserEnergySnapshotUserCrudController::class);
 
         yield MenuItem::section();
         yield MenuItem::linkToLogout('Logout', 'fa fa-sign-out');

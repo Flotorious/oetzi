@@ -32,3 +32,24 @@
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+/vendor/
+
+# Mac
+.DS_Store
+
+# PHP / Symfony
+/var/
+
+# Frontend
+/node_modules/
+/public/build/
+
+# Env-Dateien mit Secrets
+.env
+.env.local
+.env.*.local
+.env.server
+
+# IDE
+.idea/
+/.vscode/

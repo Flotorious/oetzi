@@ -21,7 +21,9 @@ final class FakeProviderController extends AbstractController
         EntityManagerInterface $em
     ): JsonResponse
     {
-
+        // Log for debugging
+        error_log("FakeProvider called for userId: $userId");
+        
         $user = $userRepository->find($userId);
 
         if (!$user) {
