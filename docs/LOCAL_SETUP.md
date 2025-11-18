@@ -1,21 +1,24 @@
-# Local Development Setup for "Oetzi"
+# Local Development Setup
 
-This guide describes how to run the project locally **for development only**.
-All credentials in this document and in `.env.example` are **dev-only** and must never be used in production.
+This guide explains how to get the **Oetzi** application running locally in a clean, reproducible way.
 
----
+It assumes you have:
 
-## 1. Prerequisites
-
-- Git
-- Docker / Docker Desktop
-- Docker Compose (if not integrated with Docker)
-
-You do **not** need a local PHP, Composer, Node, or MySQL installation – everything runs inside Docker containers.
+- Docker & Docker Compose installed
+- Git installed
+- Node.js + npm available (inside the container the image already has what it needs)
+- Composer available inside the `app` container (already part of the image)
 
 ---
 
-## 2. Clone the repository
+## 1. Clone the repository
+
+```bash
+git clone https://github.com/Flotorious/oetzi.git
+cd oetzi
+```
+
+If you use SSH:
 
 ```bash
 git clone git@github.com:Flotorious/oetzi.git
@@ -24,115 +27,77 @@ cd oetzi
 
 ---
 
-## 3. Create your local `.env` from the example
+## 2. Create your local `.env`
 
-An example environment file for **development** is provided as `.env.example`.
+The repository contains a **safe development template** in `.env.example`.
 
-Create your local `.env`:
+Create your own local `.env` from it:
 
 ```bash
 cp .env.example .env
 ```
 
-The relevant part looks like this:
+Notes:
 
-```env
-APP_ENV=dev
-APP_DEBUG=1
-
-DB_NAME=energyviz
-DB_USER=oetzi_dev
-DB_PASS=oetzi_dev_pass
-DB_ROOT_PASS=oetzi_dev_root
-
-MARIADB_VERSION=10.11
-DATABASE_URL="mysql://oetzi_dev:oetzi_dev_pass@database:3306/energyviz?serverVersion=10.11&charset=utf8mb4"
-
-MESSENGER_TRANSPORT_DSN=doctrine://default
-```
-
-> These values are meant **only for local Docker containers**.  
-> They are not real production credentials.
-
-You can change the usernames/passwords if you like – just make sure `DB_USER` / `DB_PASS` match both the `DATABASE_URL` and the values used by the `database` service in `docker-compose.yml` (via environment variables).
+- `.env` is **not** committed to Git.
+- The values in `.env.example` are *dev-only* credentials (not used in production).
+- Each developer can adjust their local `.env` if necessary.
 
 ---
 
-## 4. Start Docker containers
+## 3. Start the Docker stack
 
 ```bash
 docker compose up -d
 ```
 
-Check that everything is running:
+This starts:
+
+- `database` (MariaDB)
+- `app` (Symfony/PHP-FPM)
+- `caddy` (web server / reverse proxy)
+- `mailer` (Mailpit)
+- `messenger-consumer` (background worker)
+
+Check status:
 
 ```bash
 docker compose ps
 ```
 
-You should see at least:
-
-- `database`
-- `app`
-- `caddy`
-
-in state `Up`.
+The `database` service should be `Up` and `healthy`.
 
 ---
 
-## 5. Install PHP dependencies
+## 4. Install PHP dependencies (Composer)
+
+Run Composer inside the `app` container:
 
 ```bash
 docker compose exec app composer install
 ```
 
----
-
-## 6. Import the development database
-
-A SQL dump with a working schema and sample data should live at:
-
-```text
-docs/dev-dump.sql
-```
-
-Import it into the local Docker database:
-
-```bash
-docker compose exec -T database mysql   -uoetzi_dev   -poetzi_dev_pass   energyviz < docs/dev-dump.sql
-```
-
-Verify:
-
-```bash
-docker compose exec database mysql -uoetzi_dev -poetzi_dev_pass energyviz -e "SHOW TABLES;"
-```
-
-You should see tables like `device`, `user`, `user_energy_snapshot`, etc.
-
-If `docs/dev-dump.sql` is missing, ask a teammate or generate one from a working local instance using:
-
-```bash
-docker compose exec database mysqldump   -uoetzi_dev -poetzi_dev_pass   energyviz > docs/dev-dump.sql
-```
+This installs all Symfony / PHP dependencies required for development.
 
 ---
 
-## 7. Build frontend assets
-
-Install Node dependencies inside the app container:
+## 5. Install Node dependencies
 
 ```bash
 docker compose exec app npm install
 ```
 
-For development:
+---
+
+## 6. Build frontend assets (development)
+
+For local development:
 
 ```bash
 docker compose exec app npm run dev
 ```
 
-or, for a one-time production-style build:
+If you want a production-like build locally:
 
 ```bash
 docker compose exec app npm run build
@@ -140,45 +105,83 @@ docker compose exec app npm run build
 
 ---
 
-## 8. Access the application in the browser
+## 7. Import the development database dump
 
-Ensure you have the following entry in your hosts file:
+The repository contains a **development database dump** at `docs/dev-dump.sql`.  
+It sets up the schema and some example data.
 
-**Linux/macOS** – `/etc/hosts`  
-**Windows** – `C:\Windows\System32\drivers\etc\hosts`
+Import it into the dev database using the credentials from `.env.example`:
 
-Add:
-
-```text
-127.0.0.1   energyviz.localhost
+```bash
+docker compose exec -T database mysql   -uoetzi_dev   -poetzi_dev_pass   energyviz < docs/dev-dump.sql
 ```
 
-Then open:
+Verify that tables exist:
 
-```text
-http://energyviz.localhost
+```bash
+docker compose exec database mysql   -uoetzi_dev   -poetzi_dev_pass   energyviz -e "SHOW TABLES;"
+```
+
+You should see tables like:
+
+- `device`
+- `device_usage_log`
+- `user`
+- `user_energy_snapshot`
+- `price_rate_period`
+- `messenger_messages`
+
+---
+
+## 8. Clear Symfony cache (optional but helpful)
+
+```bash
+docker compose exec app php bin/console cache:clear
 ```
 
 ---
 
-## 9. Useful Docker commands
+## 9. Open the app in the browser
 
-View logs:
+For the default local setup, open:
 
-```bash
-docker compose logs app --tail=50
-docker compose logs database --tail=50
-docker compose logs caddy --tail=50
+```text
+http://localhost
 ```
 
-Stop containers:
+If you are using a development hostname (e.g. `energyviz.localhost`) configured in Caddy or `/etc/hosts`, use that instead.
+
+---
+
+## 10. Stopping and cleaning up
+
+To stop the containers but **keep** the data:
 
 ```bash
 docker compose down
 ```
 
-Reset everything including volumes and the database (dangerous – deletes all local DB data):
+To stop containers and **remove all data volumes** (fresh start next time):
 
 ```bash
 docker compose down -v
 ```
+
+---
+
+## Notes on environment files
+
+- `.env.example`  
+  - Tracked in Git  
+  - Contains **development-only** credentials and defaults  
+  - Safe to share with other developers
+
+- `.env`  
+  - **Not** tracked in Git  
+  - Created per developer from `.env.example`  
+  - Used by Symfony to load environment variables for local dev
+
+- Production configuration  
+  - Uses a **separate** `.env` on the server (not in Git)  
+  - With real production secrets and passwords  
+  - See `DEPLOYMENT.md` for details
